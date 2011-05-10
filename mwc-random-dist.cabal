@@ -12,16 +12,21 @@ Copyright:           2011 Finlay Thompson
 Category:            Math, Statisics
 Build-type:          Simple
 
--- Constraint on the version of Cabal needed to build this package.
-Cabal-version:       >=1.2
+cabal-version:       >= 1.6
+extra-source-files:
+  README.markdown
 
 
 Library
-  -- Exposed-modules:     
+  exposed-modules:
+    System.Random.MWC.Gamma
+    System.Random.MWC.Exponential
+  build-depends:
+    base < 5,
+    primitive,
+    logfloat,
+    mwc-random
   
-  -- Build-depends:       
-  
-  -- Other-modules:       
-  
-  -- Build-tools:         
-  
+  ghc-prof-options: -auto-all
+
+  ghc-options: -Wall -funbox-strict-fields

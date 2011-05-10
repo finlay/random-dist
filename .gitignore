@@ -1,0 +1,15 @@
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+dist/
+*.swp
+*.hi
+*.o
+CODAchain1.txt
+CODAchain2.txt
+CODAindex.txt
+test/parser/classic-bugs/vol1/line/jags.cmd
+sandpit/*.csv
