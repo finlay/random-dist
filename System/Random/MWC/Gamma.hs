@@ -138,13 +138,13 @@ gammaGD shape scale rng =
             -- Step  9:  rejection if t < tau(1) = -0.71874483771719 
             if tt >= -0.71874483771719
             then do
-                -- Step 10:     calculation of v and quotient q */
+                -- Step 10:     calculation of v and quotient q
                 let qq = calc_q tt
                 -- Step 11:     hat acceptance (h) 
                 -- (if q not positive go to step 8) 
                 if qq > 0.0  &&  c * (abs uu) <= (expm1 qq) * (exp (e - 0.5 * tt * tt))
                 then return tt
-                -- if t is rejected sample again at step 8 */
+                -- if t is rejected sample again at step 8
                 else choose_t
             else choose_t -- loop until matches
         ttt <- choose_t
