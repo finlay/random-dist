@@ -1,0 +1,27 @@
+Name:                mwc-random-dist
+Version:             0.1
+Synopsis:            Implementation of various random distributions.
+-- Description:         
+
+Homepage:            https://github.com/finlayt/mwc-random-dist
+License:             BSD3
+License-file:        LICENSE
+Author:              Finlay Thompson
+Maintainer:          Finlay thompson <finlay@dragonfly.co.nz>
+Copyright:           2011 Finlay Thompson
+Category:            Math, Statisics
+Build-type:          Simple
+
+-- Constraint on the version of Cabal needed to build this package.
+Cabal-version:       >=1.2
+
+
+Library
+  -- Exposed-modules:     
+  
+  -- Build-depends:       
+  
+  -- Other-modules:       
+  
+  -- Build-tools:         
+  
