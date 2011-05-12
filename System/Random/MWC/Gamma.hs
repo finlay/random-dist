@@ -1,3 +1,4 @@
+{-# LANGUAGE DoAndIfThenElse #-}
 module System.Random.MWC.Gamma (
    gamma
 ) where
