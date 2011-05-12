@@ -16,6 +16,9 @@ cabal-version:       >= 1.8
 extra-source-files:
   README.markdown
 
+flag test
+  Description:       Build test program
+  default:           True
 
 Library
   exposed-modules:
@@ -34,17 +37,20 @@ Library
 Executable test-mwc-random-dist
     Main-Is:        test/Main.hs
     hs-source-dirs: .,test
-    Build-depends:  base >= 4 && < 6,
-                    primitive,
-                    logfloat,
-                    mwc-random,
-                    statistics,
-                    vector,
-                    vector-algorithms,
-                    data-accessor,
-                    colour,
-                    cairo,
-                    Chart
+    if flag(test)
+      Build-depends:  base >= 4 && < 6,
+                      primitive,
+                      logfloat,
+                      mwc-random,
+                      statistics,
+                      vector,
+                      vector-algorithms,
+                      data-accessor,
+                      colour,
+                      cairo,
+                      Chart
     ghc-options:    -Wall
+    if !flag(test)
+      Buildable:    False
 
 
