@@ -3,8 +3,8 @@ module Statistics.Distribution.Random.Gamma (
    gamma
 ) where
 
-{- Algorithm borrowed from rmath/rgamma.c 
- - 
+{- Algorithm borrowed from rmath/rgamma.c
+ -
  - [1] Shape parameter a >= 1.  Algorithm GD in:
  -
  -  Ahrens, J.H. and Dieter, U. (1982).
@@ -28,7 +28,7 @@ import           Data.Number.LogFloat ( expm1 )
 
 sqrt32, exp_m1 :: Double
 sqrt32 = 5.656854
-exp_m1 = 0.36787944117144232159 -- exp(-1) = 1/e 
+exp_m1 = 0.36787944117144232159 -- exp(-1) = 1/e
 
 q1, q2, q3, q4, q5, q6, q7 :: Double
 q1 = 0.04166669
@@ -52,7 +52,7 @@ a7 = 0.1233795
 
 gamma :: (Monad m, PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
 gamma shape scale rng
-    | shape < 1.0     =  gammaGS shape scale rng 
+    | shape < 1.0     =  gammaGS shape scale rng
     | shape == 0.0    =  return 0.0
     | otherwise       =  gammaGD shape scale rng
 
@@ -62,22 +62,22 @@ gammaGS shape scale rng =
         go = do
             ru <- R.uniform rng
             let p = e * ru
-            let x = if p >= 1.0 
-                    then -(log ((e-p)/shape)) 
+            let x = if p >= 1.0
+                    then -(log ((e-p)/shape))
                     else exp ((log p)/shape)
             re <- E.exponential rng
             let accept = if p >= 1.0 then re >= ((1.0-shape) * (log x)) else re >= x
             if accept
                 then return x
                 else go
-    
-    in do 
-        x <- go 
+
+    in do
+        x <- go
         return $ scale * x
 
 
 gammaGD :: (Monad m, PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
-gammaGD shape scale rng = 
+gammaGD shape scale rng =
 
     -- Step 1: Calculations of s2, s, d
     let s2 = shape - 0.5
@@ -90,13 +90,13 @@ gammaGD shape scale rng =
         -- Approximation depending on size of parameter shape
         -- The constants in the expressions for b, si and c
         -- were established by numerical experiments
-        (b, si, c) = 
+        (b, si, c) =
             if      shape <= 3.686  then (0.463 + s + 0.178 * s2, 1.235,            0.195 / s - 0.079 + 0.16 * s)
             else if shape <= 13.022 then (1.654 + 0.0076 * s2,    1.68 / s + 0.275, 0.062 / s + 0.024)
                                     else (1.77,                   0.75,             0.1515 / s)
 
-        -- Step 6: calculation of v and quotient q 
-        calc_q t = 
+        -- Step 6: calculation of v and quotient q
+        calc_q t =
             let v = t / (s + s)
             in if (abs v) <= 0.25
                   then q0 + 0.5 * t * t * ((((((a7 * v + a6) * v + a5) * v + a4) * v + a3) * v + a2) * v + a1) * v
@@ -104,8 +104,8 @@ gammaGD shape scale rng =
 
 
         -- Step 2: t = standard normal deviate,
-        --         x = (s,1/2) -normal deviate. 
-        -- immediate acceptance (i) 
+        --         x = (s,1/2) -normal deviate.
+        -- immediate acceptance (i)
     in do
         t <- R.normal rng
         let x = s + 0.5 * t
@@ -114,14 +114,14 @@ gammaGD shape scale rng =
         then return $ scale * ret_val
         else do
 
-        -- Step 3: u = 0,1 - uniform sample. squeeze acceptance (s) 
+        -- Step 3: u = 0,1 - uniform sample. squeeze acceptance (s)
         u <- R.uniform rng
         if d * u <= t * t * t
         then return $ scale * ret_val
         else do
 
-        -- Step 5: no quotient test if x not positive 
-        -- Step 7: quotient acceptance (q) 
+        -- Step 5: no quotient test if x not positive
+        -- Step 7: quotient acceptance (q)
         let q = calc_q t
         if x > 0.0 && (log 1.0) - u <= q
         then return $ scale * ret_val
@@ -133,16 +133,16 @@ gammaGD shape scale rng =
             e  <- E.exponential rng
             u' <- R.uniform rng
             let uu = u' + u' - 1.0
-            let tt = if uu < 0.0 
-                    then b - si * e 
+            let tt = if uu < 0.0
+                    then b - si * e
                     else b + si * e
-            -- Step  9:  rejection if t < tau(1) = -0.71874483771719 
+            -- Step  9:  rejection if t < tau(1) = -0.71874483771719
             if tt >= -0.71874483771719
             then do
                 -- Step 10:     calculation of v and quotient q
                 let qq = calc_q tt
-                -- Step 11:     hat acceptance (h) 
-                -- (if q not positive go to step 8) 
+                -- Step 11:     hat acceptance (h)
+                -- (if q not positive go to step 8)
                 if qq > 0.0  &&  c * (abs uu) <= (expm1 qq) * (exp (e - 0.5 * tt * tt))
                 then return tt
                 -- if t is rejected sample again at step 8
