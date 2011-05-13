@@ -1,4 +1,4 @@
-Name:               mwc-random-dist
+Name:               random-dist
 Version:            0.1
 Synopsis:           Implementation of various random distributions.
 -- Description:         
@@ -22,8 +22,8 @@ flag test
 
 Library
   exposed-modules:
-    System.Random.MWC.Gamma
-    System.Random.MWC.Exponential
+    Statistics.Distribution.Random.Gamma
+    Statistics.Distribution.Random.Exponential
   build-depends:
     base < 5,
     primitive,
@@ -34,7 +34,7 @@ Library
 
   ghc-options: -Wall -funbox-strict-fields
 
-Executable test-mwc-random-dist
+Executable test-random-dist
   Main-Is:          test/Main.hs
   hs-source-dirs:   .,test
   if flag(test)

@@ -1,4 +1,4 @@
-module System.Random.MWC.Exponential (
+module Statistics.Distribution.Random.Exponential (
     exponential
 ) where
 

@@ -10,9 +10,9 @@ import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Algorithms.Intro (sort)
 import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
+import           Statistics.Distribution.Random.Gamma
 
 import qualified System.Random.MWC as R
-import           System.Random.MWC.Gamma
 
 import           Plot
 

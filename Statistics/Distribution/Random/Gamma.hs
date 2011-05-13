@@ -1,5 +1,5 @@
 {-# LANGUAGE DoAndIfThenElse #-}
-module System.Random.MWC.Gamma (
+module Statistics.Distribution.Random.Gamma (
    gamma
 ) where
 
@@ -22,7 +22,7 @@ module System.Random.MWC.Gamma (
  -}
 
 import qualified System.Random.MWC as R
-import qualified System.Random.MWC.Exponential as E
+import qualified Statistics.Distribution.Random.Exponential as E
 import           Control.Monad.Primitive (PrimMonad, PrimState)
 import           Data.Number.LogFloat ( expm1 )
 
