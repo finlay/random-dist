@@ -52,7 +52,7 @@ a7 = 0.1233795
 
 gamma :: (Monad m, PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
 gamma shape scale rng
-    | shape < 1.0     =  gammaGS shape scale rng
+    | shape <  1.0    =  gammaGS shape scale rng
     | shape == 0.0    =  return 0.0
     | otherwise       =  gammaGD shape scale rng
 
@@ -63,9 +63,9 @@ gammaGS shape scale rng =
             ru <- R.uniform     rng
             re <- E.exponential rng
             let p                  = e * ru
-            let x      | p >= 1    = - log ((e - p) / shape)
+                x      | p >= 1    = - log ((e - p) / shape)
                        | otherwise = exp (log p / shape)
-            let accept | p >= 1    = re >= (1 - shape) * log x
+                accept | p >= 1    = re >= (1 - shape) * log x
                        | otherwise = re >= x
             if accept then return (scale * x) else go
     in go
