@@ -1,4 +1,4 @@
-{- Test distribution by comparing output with theoretical results 
+{- Test distribution by comparing output with theoretical results
  -
  - Kolmogorov–Smirnov
  -
@@ -24,15 +24,14 @@ type Samples = V.Vector Double
 
 -- Assumes that the samples are sorted
 empirical :: Samples -> Double -> Double
-empirical v x = 
+empirical v x =
     let s = fromMaybe 1 (V.findIndex (x <=) v)
     in  (fromIntegral s) / (fromIntegral (V.length v))
 
 
-        
 -- main test
 main :: IO ()
-main = do 
+main = do
     -- for each parameters
     let shape  = 2
     let rate   = 0.9

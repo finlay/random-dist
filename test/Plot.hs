@@ -38,7 +38,7 @@ chart title tv ev = toRenderable layout
     line_t = line_color ^= opaque blue  $ line
     line_d = line_color ^= opaque green $ line
 
-    line   = line_width       ^= 0.8 
+    line   = line_width       ^= 0.8
            $ defaultPlotLines ^. plot_lines_style
 
 plot :: [(Double, Double)] -> [(Double, Double)] -> String -> FilePath -> IO ()
