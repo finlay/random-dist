@@ -27,8 +27,10 @@ import           Control.Monad.Primitive (PrimMonad, PrimState)
 import           Data.Number.LogFloat ( expm1 )
 
 sqrt32, exp_m1 :: Double
-sqrt32 = 5.656854
-exp_m1 = 0.36787944117144232159 -- exp(-1) = 1/e
+sqrt32 = sqrt 32 -- 5.656854
+{-# NOINLINE sqrt32 #-}
+exp_m1 = exp (-1) -- 0.36787944117144232159 -- exp(-1) = 1/e
+{-# NOINLINE exp_m1 #-}
 
 q1, q2, q3, q4, q5, q6, q7 :: Double
 q1 = 0.04166669
