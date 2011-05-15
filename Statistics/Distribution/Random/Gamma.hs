@@ -136,7 +136,7 @@ gammaGD shape scale rng =
                 let qq = calc_q tt
                 -- Step 11:     hat acceptance (h)
                 -- (if q not positive go to step 8)
-                if qq > 0.0  &&  c * (abs uu) <= (expm1 qq) * (exp (e - 0.5 * tt * tt))
+                if qq > 0  &&  c * abs uu <= expm1 qq * exp (e - 0.5 * tt * tt)
                 then return tt
                 -- if t is rejected sample again at step 8
                 else choose_t
