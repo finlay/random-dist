@@ -90,11 +90,10 @@ gammaGD shape scale rng =
             | otherwise       = (1.77,                   0.75,             0.1515 / s)
 
         -- Step 6: calculation of v and quotient q
-        calc_q t =
-            let v = t / (s + s)
-            in if (abs v) <= 0.25
-                  then q0 + 0.5 * t * t * ((((((a7 * v + a6) * v + a5) * v + a4) * v + a3) * v + a2) * v + a1) * v
-                  else q0 - s * t + 0.25 * t * t + (s2 + s2) * log(1.0 + v)
+        calc_q t
+            | abs v <=  0.25  = q0 + 0.5 * t * t * ((((((a7 * v + a6) * v + a5) * v + a4) * v + a3) * v + a2) * v + a1) * v
+            | otherwise       = q0 - s * t + 0.25 * t * t + (s2 + s2) * log (1.0 + v)
+            where v = t / (s + s)
 
 
         -- Step 2: t = standard normal deviate,
@@ -104,7 +103,7 @@ gammaGD shape scale rng =
         t <- R.normal rng
         let x = s + 0.5 * t
         let ret_val = x * x
-        if t >= 0.0
+        if t >= 0
         then return $ scale * ret_val
         else do
 
@@ -117,7 +116,7 @@ gammaGD shape scale rng =
         -- Step 5: no quotient test if x not positive
         -- Step 7: quotient acceptance (q)
         let q = calc_q t
-        if x > 0.0 && (log 1.0) - u <= q
+        if x > 0 && (log 1.0) - u <= q
         then return $ scale * ret_val
         else do
         let choose_t = do
@@ -126,8 +125,8 @@ gammaGD shape scale rng =
             --         t = (b,si)-double exponential (laplace) sample
             e  <- E.exponential rng
             u' <- R.uniform rng
-            let uu = u' + u' - 1.0
-            let tt = if uu < 0.0
+            let uu = u' + u' - 1
+            let tt = if uu < 0
                     then b - si * e
                     else b + si * e
             -- Step  9:  rejection if t < tau(1) = -0.71874483771719
