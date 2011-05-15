@@ -97,31 +97,7 @@ gammaGD shape scale rng =
             | otherwise       = q0 - s * t + 0.25 * t * t + (s2 + s2) * log (1.0 + v)
             where v = t / (s + s)
 
-
-        -- Step 2: t = standard normal deviate,
-        --         x = (s,1/2) -normal deviate.
-        -- immediate acceptance (i)
-    in do
-        t <- R.normal rng
-        let x = s + 0.5 * t
-        let ret_val = x * x
-        if t >= 0
-        then return $ scale * ret_val
-        else do
-
-        -- Step 3: u = 0,1 - uniform sample. squeeze acceptance (s)
-        u <- R.uniform rng
-        if d * u <= t * t * t
-        then return $ scale * ret_val
-        else do
-
-        -- Step 5: no quotient test if x not positive
-        -- Step 7: quotient acceptance (q)
-        let q = calc_q t
-        if x > 0 && (log 1.0) - u <= q
-        then return $ scale * ret_val
-        else do
-        let choose_t = do
+        choose_t = do
             -- Step 8: e = standard exponential deviate
             --         u =  0,1 -uniform deviate
             --         t = (b,si)-double exponential (laplace) sample
@@ -143,7 +119,31 @@ gammaGD shape scale rng =
                 -- if t is rejected sample again at step 8
                 else choose_t
             else choose_t -- loop until matches
+
+
+        -- Step 2: t = standard normal deviate,
+        --         x = (s,1/2) -normal deviate.
+        -- immediate acceptance (i)
+    in do
+        t <- R.normal rng
+        let x = s + 0.5 * t
+        let ret_val = scale * x * x
+        if t >= 0
+        then return ret_val
+        else do
+
+        -- Step 3: u = 0,1 - uniform sample. squeeze acceptance (s)
+        u <- R.uniform rng
+        if d * u <= t * t * t
+        then return ret_val
+        else do
+
+        -- Step 5: no quotient test if x not positive
+        -- Step 7: quotient acceptance (q)
+        let q = calc_q t
+        if x > 0 && (log 1.0) - u <= q
+        then return ret_val
+        else do
         ttt <- choose_t
         let xx = s + 0.5 * ttt
         return $ scale * xx * xx
-
