@@ -8,6 +8,7 @@ dist/
 *.swp
 *.hi
 *.o
+*~
 CODAchain1.txt
 CODAchain2.txt
 CODAindex.txt
