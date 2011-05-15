@@ -75,19 +75,19 @@ gammaGD shape scale rng =
 
     -- Step 1: Calculations of s2, s, d
     let s2 = shape - 0.5
-        s = sqrt s2
-        d = sqrt32 - s * 12.0
+        s  = sqrt s2
+        d  = sqrt32 - s * 12
         -- Step 4: Calculations of q0, b, si, c
-        r = 1.0 / shape
+        r  = 1 / shape
         q0 = ((((((q7 * r + q6) * r + q5) * r + q4) * r + q3) * r + q2) * r + q1) * r
 
         -- Approximation depending on size of parameter shape
         -- The constants in the expressions for b, si and c
         -- were established by numerical experiments
-        (b, si, c) =
-            if      shape <= 3.686  then (0.463 + s + 0.178 * s2, 1.235,            0.195 / s - 0.079 + 0.16 * s)
-            else if shape <= 13.022 then (1.654 + 0.0076 * s2,    1.68 / s + 0.275, 0.062 / s + 0.024)
-                                    else (1.77,                   0.75,             0.1515 / s)
+        (b, si, c)
+            | shape <=  3.686 = (0.463 + s + 0.178 * s2, 1.235,            0.195 / s - 0.079 + 0.16 * s)
+            | shape <= 13.022 = (1.654 + 0.0076 * s2,    1.68 / s + 0.275, 0.062 / s + 0.024)
+            | otherwise       = (1.77,                   0.75,             0.1515 / s)
 
         -- Step 6: calculation of v and quotient q
         calc_q t =
