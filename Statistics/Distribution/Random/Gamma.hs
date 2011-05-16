@@ -141,7 +141,7 @@ gammaGD shape scale rng =
         -- Step 5: no quotient test if x not positive
         -- Step 7: quotient acceptance (q)
         let q = calc_q t
-        if x > 0 && (log 1.0) - u <= q
+        if x > 0 && log (1 - u) <= q
         then return ret_val
         else do
         ttt <- choose_t
