@@ -25,8 +25,8 @@ type Samples = V.Vector Double
 -- Assumes that the samples are sorted
 empirical :: Samples -> Double -> Double
 empirical v x =
-    let s = fromMaybe 1 (V.findIndex (x <=) v)
-    in  (fromIntegral s) / (fromIntegral (V.length v))
+    let s = fromMaybe (V.length v) (V.findIndex (x <=) v)
+    in  fromIntegral s / fromIntegral (V.length v)
 
 
 -- main test
