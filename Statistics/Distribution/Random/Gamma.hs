@@ -61,15 +61,15 @@ horner :: [Double] -> Double -> Double
 horner q r = foldl' (\ a b -> (a + b) * r) 0 q
 {-# INLINE horner #-}
 
-gamma :: (Monad m, PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
+gamma :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
 gamma shape scale rng
-    | shape <  1.0    =  gammaGS shape scale rng
-    | shape == 0.0    =  return 0.0
-    | otherwise       =  gammaGD shape scale rng
+    | shape <  1    =  gammaGS shape scale rng
+    | shape == 0    =  return 0
+    | otherwise     =  gammaGD shape scale rng
 
-gammaGS :: (Monad m, PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
+gammaGS :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
 gammaGS shape scale rng =
-    let e  = 1.0 + exp_m1 * shape
+    let e  = 1 + exp_m1 * shape
         go = do
             ru <- R.uniform     rng
             re <- E.exponential rng
@@ -81,7 +81,7 @@ gammaGS shape scale rng =
             if accept then return (scale * x) else go
     in go
 
-gammaGD :: (Monad m, PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
+gammaGD :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
 gammaGD shape scale rng =
 
     -- Step 1: Calculations of s2, s, d
@@ -102,7 +102,7 @@ gammaGD shape scale rng =
 
         -- Step 6: calculation of v and quotient q
         calc_q t
-            | abs v <=  0.25  = q0 + 0.5 * t * t * horner as v
+            | abs v <= 0.25   = q0 + 0.5 * t * t * horner as v
             | otherwise       = q0 - s * t + 0.25 * t * t + (s2 + s2) * log (1 + v)
             where v = t / (s + s)
 
@@ -113,9 +113,7 @@ gammaGD shape scale rng =
             e  <- E.exponential rng
             u' <- R.uniform rng
             let uu = u' + u' - 1
-            let tt = if uu < 0
-                    then b - si * e
-                    else b + si * e
+            let tt = if uu < 0 then b - si * e else b + si * e
             -- Step  9:  rejection if t < tau(1) = -0.71874483771719
             if tt >= -0.71874483771719
             then do
@@ -128,7 +126,6 @@ gammaGD shape scale rng =
                 -- if t is rejected sample again at step 8
                 else choose_t
             else choose_t -- loop until matches
-
 
         -- Step 2: t = standard normal deviate,
         --         x = (s,1/2) -normal deviate.
