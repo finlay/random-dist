@@ -24,6 +24,7 @@ module Statistics.Distribution.Random.Gamma (
 import qualified System.Random.MWC as R
 import qualified Statistics.Distribution.Random.Exponential as E
 import           Control.Monad.Primitive (PrimMonad, PrimState)
+import           Data.List ( foldl' )
 import           Data.Number.LogFloat ( expm1 )
 
 sqrt32, exp_m1 :: Double
@@ -33,24 +34,32 @@ exp_m1 = exp (-1) -- 0.36787944117144232159 -- exp(-1) = 1/e
 {-# NOINLINE exp_m1 #-}
 
 q1, q2, q3, q4, q5, q6, q7 :: Double
-q1 = 0.04166669
-q2 = 0.02083148
-q3 = 0.00801191
-q4 = 0.00144121
+q1 =  0.04166669
+q2 =  0.02083148
+q3 =  0.00801191
+q4 =  0.00144121
 q5 = -7.388e-5
-q6 = 2.4511e-4
-q7 = 2.424e-4
+q6 =  2.4511e-4
+q7 =  2.424e-4
+qs :: [Double]
+qs = [q7, q6, q5, q4, q3, q2, q1]
+{-# INLINE qs #-}
 
 a1, a2, a3, a4, a5, a6, a7 :: Double
-a1 = 0.3333333
+a1 =  0.3333333
 a2 = -0.250003
-a3 = 0.2000062
+a3 =  0.2000062
 a4 = -0.1662921
-a5 = 0.1423657
+a5 =  0.1423657
 a6 = -0.1367177
-a7 = 0.1233795
+a7 =  0.1233795
+as :: [Double]
+as = [a7, a6, a5, a4, a3, a2, a1]
+{-# INLINE as #-}
 
---fn q r = foldl step 0 q where step a b = (a + b) * r
+horner :: [Double] -> Double -> Double
+horner q r = foldl' (\ a b -> (a + b) * r) 0 q
+{-# INLINE horner #-}
 
 gamma :: (Monad m, PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
 gamma shape scale rng
@@ -81,7 +90,7 @@ gammaGD shape scale rng =
         d  = sqrt32 - s * 12
         -- Step 4: Calculations of q0, b, si, c
         r  = 1 / shape
-        q0 = ((((((q7 * r + q6) * r + q5) * r + q4) * r + q3) * r + q2) * r + q1) * r
+        q0 = horner qs r
 
         -- Approximation depending on size of parameter shape
         -- The constants in the expressions for b, si and c
@@ -93,8 +102,8 @@ gammaGD shape scale rng =
 
         -- Step 6: calculation of v and quotient q
         calc_q t
-            | abs v <=  0.25  = q0 + 0.5 * t * t * ((((((a7 * v + a6) * v + a5) * v + a4) * v + a3) * v + a2) * v + a1) * v
-            | otherwise       = q0 - s * t + 0.25 * t * t + (s2 + s2) * log (1.0 + v)
+            | abs v <=  0.25  = q0 + 0.5 * t * t * horner as v
+            | otherwise       = q0 - s * t + 0.25 * t * t + (s2 + s2) * log (1 + v)
             where v = t / (s + s)
 
         choose_t = do
