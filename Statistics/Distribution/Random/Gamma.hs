@@ -1,4 +1,3 @@
-{-# LANGUAGE DoAndIfThenElse #-}
 module Statistics.Distribution.Random.Gamma (
    gamma
 ) where
@@ -24,8 +23,8 @@ module Statistics.Distribution.Random.Gamma (
 import qualified System.Random.MWC as R
 import qualified Statistics.Distribution.Random.Exponential as E
 import           Control.Monad.Primitive (PrimMonad, PrimState)
-import           Data.List ( foldl' )
-import           Data.Number.LogFloat ( expm1 )
+import           Data.List (foldl')
+import           Data.Number.LogFloat (expm1)
 
 sqrt32, exp_m1 :: Double
 sqrt32 = sqrt 32 -- 5.656854
@@ -116,16 +115,16 @@ gammaGD shape scale rng =
             let tt = if uu < 0 then b - si * e else b + si * e
             -- Step  9:  rejection if t < tau(1) = -0.71874483771719
             if tt >= -0.71874483771719
-            then do
-                -- Step 10:     calculation of v and quotient q
-                let qq = calc_q tt
-                -- Step 11:     hat acceptance (h)
-                -- (if q not positive go to step 8)
-                if qq > 0  &&  c * abs uu <= expm1 qq * exp (e - 0.5 * tt * tt)
-                then return tt
-                -- if t is rejected sample again at step 8
-                else choose_t
-            else choose_t -- loop until matches
+                then do
+                    -- Step 10:     calculation of v and quotient q
+                    let qq = calc_q tt
+                    -- Step 11:     hat acceptance (h)
+                    -- (if q not positive go to step 8)
+                    if qq > 0 && c * abs uu <= expm1 qq * exp (e - 0.5 * tt * tt)
+                        then return tt
+                        -- if t is rejected sample again at step 8
+                        else choose_t
+                else choose_t -- loop until matches
 
         -- Step 2: t = standard normal deviate,
         --         x = (s,1/2) -normal deviate.
@@ -133,23 +132,23 @@ gammaGD shape scale rng =
     in do
         t <- R.normal rng
         let x = s + 0.5 * t
-        let ret_val = scale * x * x
+            ret_val = scale * x * x
         if t >= 0
-        then return ret_val
-        else do
+            then return ret_val
+            else do
 
-        -- Step 3: u = 0,1 - uniform sample. squeeze acceptance (s)
-        u <- R.uniform rng
-        if d * u <= t * t * t
-        then return ret_val
-        else do
+                -- Step 3: u = 0,1 - uniform sample. squeeze acceptance (s)
+                u <- R.uniform rng
+                if d * u <= t * t * t
+                    then return ret_val
+                    else do
 
-        -- Step 5: no quotient test if x not positive
-        -- Step 7: quotient acceptance (q)
-        let q = calc_q t
-        if x > 0 && log (1 - u) <= q
-        then return ret_val
-        else do
-        ttt <- choose_t
-        let xx = s + 0.5 * ttt
-        return $ scale * xx * xx
+                        -- Step 5: no quotient test if x not positive
+                        -- Step 7: quotient acceptance (q)
+                        let q = calc_q t
+                        if x > 0 && log (1 - u) <= q
+                            then return ret_val
+                            else do
+                                ttt <- choose_t
+                                let xx = s + 0.5 * ttt
+                                return $ scale * xx * xx
