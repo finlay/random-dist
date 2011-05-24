@@ -5,10 +5,21 @@ import Data.Colour
 import Data.Colour.Names
 import Data.Accessor
 
+import Statistics.Types
+import qualified Data.Vector.Unboxed as V
 
-chart :: String -> [(Double, Double)] -> [(Double, Double)] -> Renderable ()
-chart title tv ev = toRenderable layout
+(/.) :: (Real a, Real b, Fractional c) => a -> b -> c
+(/.) x y = fromRational $ (toRational x) / (toRational y)
+
+chart :: String -> Sample -> Double -> Double -> Renderable ()
+chart title vs d p = toRenderable layout
   where
+    n = V.length vs
+    tv :: [ ( Double, Double ) ]
+    tv = [ (fromIntegral i, i /. n) | i <- [1 .. n]]
+    ev :: [ ( Double, Double ) ]
+    ev = zip (map fromIntegral [1 .. n]) (V.toList vs)
+
     layout :: Layout1 Double Double
     layout = layout1_title      ^= title
            $ layout1_background ^= solidFillStyle (opaque white)
@@ -20,18 +31,18 @@ chart title tv ev = toRenderable layout
            $ defaultLayout1
 
     theoretical = plot_lines_style  ^= line_t
-           $ plot_lines_values  ^= [tv]
-           $ plot_lines_title   ^= "Theoretical"
+           $ plot_lines_values      ^= [tv]
+           $ plot_lines_title       ^= "Theoretical"
            $ defaultPlotLines
 
     empirical = plot_lines_style ^= line_e
-           $ plot_lines_values  ^= [ev]
-           $ plot_lines_title   ^= "Empirical"
+           $ plot_lines_values   ^= [ev]
+           $ plot_lines_title    ^= "Empirical"
            $ defaultPlotLines
 
     difference = plot_lines_style ^= line_d
-           $ plot_lines_values  ^= [[ (x, t-e) | ((x,t),(_,e)) <- zip tv ev]]
-           $ plot_lines_title   ^= "Difference"
+           $ plot_lines_values    ^= [[ (x, t-e) | ((x,t),(_,e)) <- zip tv ev]]
+           $ plot_lines_title     ^= "Difference"
            $ defaultPlotLines
 
     line_e = line_color ^= opaque red   $ line
@@ -41,5 +52,5 @@ chart title tv ev = toRenderable layout
     line   = line_width       ^= 0.8
            $ defaultPlotLines ^. plot_lines_style
 
-plot :: [(Double, Double)] -> [(Double, Double)] -> String -> FilePath -> IO ()
-plot tv ev title fn = renderableToSVGFile (chart title tv ev) 800 600 fn
+plot :: Sample -> Double -> Double -> String -> FilePath -> IO ()
+plot vs d p title fn = renderableToSVGFile (chart title vs d p) 800 600 fn

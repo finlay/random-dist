@@ -24,11 +24,17 @@ Library
   exposed-modules:
     Statistics.Distribution.Random.Gamma
     Statistics.Distribution.Random.Exponential
+    Statistics.Test.KolmogorovSmirnov
   build-depends:
     base < 5,
     primitive,
     logfloat,
-    mwc-random
+    mwc-random,
+    statistics,
+    vector,
+    vector-algorithms,
+    repa,
+    repa-algorithms
   
   ghc-prof-options: -auto-all
 
@@ -45,6 +51,8 @@ Executable test-random-dist
                     statistics,
                     vector,
                     vector-algorithms,
+                    repa,
+                    repa-algorithms,
                     data-accessor,
                     colour,
                     cairo,
