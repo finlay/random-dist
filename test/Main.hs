@@ -21,7 +21,7 @@ import           Plot
 
 -- number of random draws from generator
 size :: Int
-size = 50000
+size = 5000
 
 -- main test
 main :: IO ()
@@ -42,7 +42,8 @@ main = do
 
     --  generate plot(s)
     let vs = V.modify sort v
-    plot vs d p "Test" "test.svg"
+    let cm = V.map (cumulative gd) vs
+    plot cm d p "Test" "test.svg"
 
     putStrLn $ "Done "++ (show $ V.length vs)
 
