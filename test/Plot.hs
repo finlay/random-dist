@@ -11,8 +11,8 @@ import qualified Data.Vector.Unboxed as V
 (/.) :: (Real a, Real b, Fractional c) => a -> b -> c
 (/.) x y = fromRational $ (toRational x) / (toRational y)
 
-chart :: String -> Sample -> Double -> Double -> Renderable ()
-chart title vs d p = toRenderable layout
+chart :: String -> Sample -> Renderable ()
+chart title vs = toRenderable layout
   where
     n = V.length vs
     tv :: [ ( Double, Double ) ]
@@ -23,9 +23,8 @@ chart title vs d p = toRenderable layout
     layout :: Layout1 Double Double
     layout = layout1_title      ^= title
            $ layout1_background ^= solidFillStyle (opaque white)
-           $ layout1_left_axis  ^: laxis_override ^= axisTicksHide
-           $ layout1_plots      ^= [ Left (toPlot theoretical),
-                                     Left (toPlot empirical),
+           $ layout1_plots      ^= [ Left  (toPlot theoretical),
+                                     Left  (toPlot empirical),
                                      Right (toPlot difference)]
            $ setLayout1Foreground (opaque black)
            $ defaultLayout1
@@ -52,5 +51,5 @@ chart title vs d p = toRenderable layout
     line   = line_width       ^= 0.8
            $ defaultPlotLines ^. plot_lines_style
 
-plot :: Sample -> Double -> Double -> String -> FilePath -> IO ()
-plot vs d p title fn = renderableToSVGFile (chart title vs d p) 800 600 fn
+plot :: Sample -> String -> FilePath -> IO ()
+plot vs title fn = renderableToSVGFile (chart title vs) 800 600 fn
