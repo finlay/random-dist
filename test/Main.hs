@@ -4,8 +4,11 @@
  -
  -}
 
+import           System.Environment (getArgs)
+import           Control.Monad (when)
 import           Data.List (intersperse)
 import           Text.Printf
+
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Algorithms.Intro (sort)
 import           Statistics.Distribution
@@ -18,16 +21,20 @@ import qualified System.Random.MWC as R
 
 import           Plot
 
--- number of random draws from generator
-size :: Int
-size = 10000
 
 -- main test
 main :: IO ()
 main = do
-    -- for each parameters
-    let shape  = 2.3
-    let rate   = 1.1
+
+    args <- getArgs
+
+    when ((length args) /= 3) $ do
+        error "Usage: ./test size shape rate" 
+
+    let size  = read $ head args :: Int
+    let shape = read $ head $ tail args :: Double
+    let rate  = read $ head $ tail $ tail args :: Double
+
     rng <- R.create
     let gs = gamma shape (1/rate)
     
@@ -49,7 +56,11 @@ main = do
     let vs = V.modify sort v
     let cm = V.map (cumulative gd) vs
     let title = printf "D = %f, p-value = %f" d p
+
     plot cm title "test.svg"
+
+    let titledensity = printf "shape = %f, rate = %f" shape rate
+    plotDensity vs titledensity "test-density.svg"
 
     putStrLn $ "Done "++ (show $ V.length vs)
 

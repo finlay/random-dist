@@ -1,4 +1,7 @@
-module Plot ( plot ) where
+module Plot ( 
+    plot,
+    plotDensity
+) where
 
 import Graphics.Rendering.Chart
 import Data.Colour
@@ -11,8 +14,8 @@ import qualified Data.Vector.Unboxed as V
 (/.) :: (Real a, Real b, Fractional c) => a -> b -> c
 (/.) x y = fromRational $ (toRational x) / (toRational y)
 
-chart :: String -> Sample -> Renderable ()
-chart title vs = toRenderable layout
+plot :: Sample -> String -> FilePath -> IO ()
+plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
   where
     n = V.length vs
     tv :: [ ( Double, Double ) ]
@@ -51,5 +54,46 @@ chart title vs = toRenderable layout
     line   = line_width       ^= 0.8
            $ defaultPlotLines ^. plot_lines_style
 
-plot :: Sample -> String -> FilePath -> IO ()
-plot vs title fn = renderableToSVGFile (chart title vs) 800 600 fn
+
+plotDensity :: Sample -> String -> FilePath -> IO ()
+plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
+  where
+    n = V.length vs
+    mx = V.maximum vs
+
+    -- divide domain into bins 
+    bins = fromIntegral $ max (n `div` 100) 1000
+    x = map (* ((mx*1.2) / bins)) [ 0.0, 1.0 .. bins ]
+
+    -- count how many at each level
+    y = map (/. n) $ snd $ foldr cumulate (x, [0]) $ V.toList vs
+         where 
+            cumulate :: Double -> ([Double], [Double]) -> ([Double], [Double])
+            cumulate _ ([], ys) = ([], ys)
+            cumulate y' (x1:[], ys) 
+                    | y' < x1   = ([], ((head ys + 1) : tail ys))
+                    | otherwise = ([], ys)
+            cumulate y' (x1:x2:xs, ys) 
+                    | y' < x1   = (xs, ((head ys + 1) : tail ys))
+                    | y' < x2   = ((x2:xs), (1:ys))
+                    | otherwise = cumulate y' ((x2:xs), (0:ys)) 
+
+    layout :: Layout1 Double Double
+    layout = layout1_title      ^= title
+           $ layout1_background ^= solidFillStyle (opaque white)
+           $ layout1_plots      ^= [ Left  (toPlot empirical) ]
+           $ setLayout1Foreground (opaque black)
+           $ defaultLayout1
+
+    empirical = plot_lines_style ^= line_e
+           $ plot_lines_values   ^= [zip x y]
+           $ plot_lines_title    ^= "Empirical"
+           $ defaultPlotLines
+
+    line_e = line_color ^= opaque red   $ line
+--     line_t = line_color ^= opaque blue  $ line
+--     line_d = line_color ^= opaque green $ line
+
+    line   = line_width       ^= 0.8
+           $ defaultPlotLines ^. plot_lines_style
+    
