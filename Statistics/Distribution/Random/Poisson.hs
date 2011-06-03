@@ -36,8 +36,7 @@ poisson mu
 
 -- Factorial table.
 fact :: V.Vector Double
-fact = V.unfoldrN 10
-         (\ (!i, !j) -> Just (fromIntegral j, (i + 1, i * j))) (1, 1)
+fact = V.scanl (*) 1 (V.fromList [1..9])
 
 -- Coefficients of the polynomial a.
 as :: [Double]
