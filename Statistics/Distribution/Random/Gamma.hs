@@ -61,8 +61,8 @@ horner q r = foldl' (\ a b -> (a + b) * r) 0 q
 
 gamma :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
 gamma shape scale rng
-    | shape <  1    =  gammaGS shape scale rng
     | shape == 0    =  return 0
+    | shape <  1    =  gammaGS shape scale rng
     | otherwise     =  gammaGD shape scale rng
 
 gammaGS :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
