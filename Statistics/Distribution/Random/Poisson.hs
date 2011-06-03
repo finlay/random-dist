@@ -133,11 +133,11 @@ caseA mu = go
                              (1 / sqrt (2 * pi)) / sqrt bKd)
             (!fx, !fy)    = (0.5 * bX * bX,
                              omega * (horner cs (bX * bX) + c0))
-            bKd           = fromIntegral bK
+            !bKd          = fromIntegral bK
             !bX           = (bKd - mu + 0.5) / s
-            delta'        = 1 / (12 * bKd)
-            delta         = delta - 4.8 * delta * delta * delta
-            bV            = (mu - bKd) - bKd
+            !delta'       = 1 / (12 * bKd)
+            !delta        = delta' - 4.8 * delta' * delta' * delta'
+            !bV           = (mu - bKd) - bKd
 
 
 
