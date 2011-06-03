@@ -22,8 +22,9 @@ flag test
 
 Library
   exposed-modules:
-    Statistics.Distribution.Random.Gamma
     Statistics.Distribution.Random.Exponential
+    Statistics.Distribution.Random.Gamma
+    Statistics.Distribution.Random.Poisson
     Statistics.Test.KolmogorovSmirnov
   build-depends:
     base < 5,
