@@ -24,7 +24,7 @@ import qualified Statistics.Distribution.Random.Exponential as E
 -- we implement the Poisson distribution simply in such a way that
 -- partial parameterization to mu will save unnecessary recomputations.
 
-poisson :: (PrimMonad m) => Double -> R.Gen (PrimState m) -> m Int
+-- poisson :: (PrimMonad m) => Double -> R.Gen (PrimState m) -> m Int
 poisson mu
   | mu == 0   = const (return 0)
   | mu >= 10  = caseA mu
@@ -145,13 +145,13 @@ caseA mu = go
 -- of this part is concerned with calculating array P on demand.
 -- We can just achieve this by making use of laziness.
 
-caseB :: (PrimMonad m) => Double -> R.Gen (PrimState m) -> m Int
+-- caseB :: (PrimMonad m) => Double -> R.Gen (PrimState m) -> m Int
 caseB mu = go
   where
     -- Quantities depending only on mu.
     bM = max 1 (floor mu)
     p0 = exp (-mu)
-    bP = V.unfoldrN 36 genP (0, p0, p0)
+    bP = V.unfoldrN 36 genP (1, p0, p0)
 
     -- Generation function for the array. Tricky deviation from the
     -- paper: We use q before changing it, but in turn, we also start
