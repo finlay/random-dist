@@ -12,15 +12,17 @@ import Statistics.Types
 import qualified Data.Vector.Unboxed as V
 
 (/.) :: (Real a, Real b, Fractional c) => a -> b -> c
-(/.) x y = fromRational $ (toRational x) / (toRational y)
+(/.) x y = fromRational $ toRational x / toRational y
 
 plot :: Sample -> String -> FilePath -> IO ()
 plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
   where
     n = V.length vs
-    tv :: [ ( Double, Double ) ]
-    tv = [ (fromIntegral i, i /. n) | i <- [1 .. n]]
-    ev :: [ ( Double, Double ) ]
+
+    tv :: [(Double, Double)]
+    tv = [(fromIntegral i, i /. n) | i <- [1 .. n]]
+
+    ev :: [(Double, Double)]
     ev = zip (map fromIntegral [1 .. n]) (V.toList vs)
 
     layout :: Layout1 Double Double
@@ -32,25 +34,30 @@ plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
            $ setLayout1Foreground (opaque black)
            $ defaultLayout1
 
+    theoretical :: PlotLines Double Double
     theoretical = plot_lines_style  ^= line_t
            $ plot_lines_values      ^= [tv]
            $ plot_lines_title       ^= "Theoretical"
            $ defaultPlotLines
 
+    empirical :: PlotLines Double Double
     empirical = plot_lines_style ^= line_e
            $ plot_lines_values   ^= [ev]
            $ plot_lines_title    ^= "Empirical"
            $ defaultPlotLines
 
+    difference :: PlotLines Double Double
     difference = plot_lines_style ^= line_d
-           $ plot_lines_values    ^= [[ (x, t-e) | ((x,t),(_,e)) <- zip tv ev]]
+           $ plot_lines_values    ^= [[(x, t-e) | ((x,t),(_,e)) <- zip tv ev]]
            $ plot_lines_title     ^= "Difference"
            $ defaultPlotLines
 
+    line_e, line_t, line_d :: CairoLineStyle
     line_e = line_color ^= opaque red   $ line
     line_t = line_color ^= opaque blue  $ line
     line_d = line_color ^= opaque green $ line
 
+    line :: CairoLineStyle
     line   = line_width       ^= 0.8
            $ defaultPlotLines ^. plot_lines_style
 
@@ -62,11 +69,15 @@ plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
     mx = V.maximum vs
 
     -- divide domain into bins
+    bins :: Double
     bins = fromIntegral $ max (n `div` 100) 1000
-    x = map (* ((mx*1.2) / bins)) [ 0.0, 1.0 .. bins ]
+
+    x :: [Double]
+    x = map (* ((mx * 1.2) / bins)) [0 .. bins]
 
     -- count how many at each level
-    y = map (/. n) $ snd $ foldr cumulate (x, [0]) $ V.toList vs
+    y :: [Double]
+    y = map (/. n) $ snd $ V.foldr cumulate (x, [0]) vs
          where
             cumulate :: Double -> ([Double], [Double]) -> ([Double], [Double])
             cumulate _ ([], ys) = ([], ys)
@@ -85,14 +96,17 @@ plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
            $ setLayout1Foreground (opaque black)
            $ defaultLayout1
 
+    empirical :: PlotLines Double Double
     empirical = plot_lines_style ^= line_e
            $ plot_lines_values   ^= [zip x y]
            $ plot_lines_title    ^= "Empirical"
            $ defaultPlotLines
 
+    line_e :: CairoLineStyle
     line_e = line_color ^= opaque red   $ line
 --     line_t = line_color ^= opaque blue  $ line
 --     line_d = line_color ^= opaque green $ line
 
+    line :: CairoLineStyle
     line   = line_width       ^= 0.8
            $ defaultPlotLines ^. plot_lines_style
