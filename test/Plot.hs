@@ -1,4 +1,4 @@
-module Plot ( 
+module Plot (
     plot,
     plotDensity
 ) where
@@ -61,22 +61,22 @@ plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
     n = V.length vs
     mx = V.maximum vs
 
-    -- divide domain into bins 
+    -- divide domain into bins
     bins = fromIntegral $ max (n `div` 100) 1000
     x = map (* ((mx*1.2) / bins)) [ 0.0, 1.0 .. bins ]
 
     -- count how many at each level
     y = map (/. n) $ snd $ foldr cumulate (x, [0]) $ V.toList vs
-         where 
+         where
             cumulate :: Double -> ([Double], [Double]) -> ([Double], [Double])
             cumulate _ ([], ys) = ([], ys)
-            cumulate y' (x1:[], ys) 
+            cumulate y' (x1:[], ys)
                     | y' < x1   = ([], ((head ys + 1) : tail ys))
                     | otherwise = ([], ys)
-            cumulate y' (x1:x2:xs, ys) 
+            cumulate y' (x1:x2:xs, ys)
                     | y' < x1   = (xs, ((head ys + 1) : tail ys))
                     | y' < x2   = ((x2:xs), (1:ys))
-                    | otherwise = cumulate y' ((x2:xs), (0:ys)) 
+                    | otherwise = cumulate y' ((x2:xs), (0:ys))
 
     layout :: Layout1 Double Double
     layout = layout1_title      ^= title
@@ -96,4 +96,3 @@ plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
 
     line   = line_width       ^= 0.8
            $ defaultPlotLines ^. plot_lines_style
-    
