@@ -28,16 +28,17 @@ main = do
 
     args <- getArgs
 
-    when ((length args) /= 3) $ do
-        error "Usage: ./test size shape rate" 
-
-    let size  = read $ head args :: Int
-    let shape = read $ head $ tail args :: Double
-    let rate  = read $ head $ tail $ tail args :: Double
+    let size  :: Int
+        shape :: Double
+        rate  :: Double
+        (size, shape, rate) =
+          case args of
+            [size', shape', rate'] -> (read size', read shape', read rate')
+            _                      -> error "Usage: ./test size shape rate"
 
     rng <- R.create
     let gs = gamma shape (1/rate)
-    
+
     --  get samples
     v <- V.replicateM size (gs rng)
 
@@ -45,7 +46,7 @@ main = do
     let pv = "gammas\n" ++ (concat $ intersperse "\n" $ map show $ V.toList v)
     writeFile (printf "gammas-%f-%f.csv" shape rate) pv
     --  benchmark times
-    
+
     --  calc K-S test statistic
     let gd = gammaDistr shape (1/rate)
     let (d, p) = kolmogorovSmirnov gd v
