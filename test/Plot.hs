@@ -35,32 +35,39 @@ plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
            $ defaultLayout1
 
     theoretical :: PlotLines Double Double
-    theoretical = plot_lines_style  ^= line_t
-           $ plot_lines_values      ^= [tv]
-           $ plot_lines_title       ^= "Theoretical"
-           $ defaultPlotLines
+    theoretical = theoreticalWith tv
 
     empirical :: PlotLines Double Double
-    empirical = plot_lines_style ^= line_e
-           $ plot_lines_values   ^= [ev]
-           $ plot_lines_title    ^= "Empirical"
-           $ defaultPlotLines
+    empirical = empiricalWith ev
 
     difference :: PlotLines Double Double
-    difference = plot_lines_style ^= line_d
-           $ plot_lines_values    ^= [[(x, t-e) | ((x,t),(_,e)) <- zip tv ev]]
-           $ plot_lines_title     ^= "Difference"
-           $ defaultPlotLines
+    difference = differenceWith $
+                 zipWith (\ (x, t) (_, e) -> (x, t - e)) tv ev
 
-    line_e, line_t, line_d :: CairoLineStyle
-    line_e = line_color ^= opaque red   $ line
-    line_t = line_color ^= opaque blue  $ line
-    line_d = line_color ^= opaque green $ line
+line_e, line_t, line_d :: CairoLineStyle
+line_e = line_color ^= opaque red   $ line
+line_t = line_color ^= opaque blue  $ line
+line_d = line_color ^= opaque green $ line
 
-    line :: CairoLineStyle
-    line   = line_width       ^= 0.8
-           $ defaultPlotLines ^. plot_lines_style
+line :: CairoLineStyle
+line   = line_width       ^= 0.8
+       $ defaultPlotLines ^. plot_lines_style
 
+lineWith :: CairoLineStyle -> String -> [(Double, Double)] ->
+            PlotLines Double Double
+lineWith ls txt vs = plot_lines_style ^= ls
+       $ plot_lines_values   ^= [vs]
+       $ plot_lines_title    ^= txt
+       $ defaultPlotLines
+
+theoreticalWith :: [(Double, Double)] -> PlotLines Double Double
+theoreticalWith = lineWith line_t "Theoretical"
+
+empiricalWith :: [(Double, Double)] -> PlotLines Double Double
+empiricalWith = lineWith line_e "Empirical"
+
+differenceWith :: [(Double, Double)] -> PlotLines Double Double
+differenceWith = lineWith line_d "Difference"
 
 plotDensity :: Sample -> String -> FilePath -> IO ()
 plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
@@ -78,16 +85,6 @@ plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
     -- count how many at each level
     y :: [Double]
     y = map (/. n) $ snd $ V.foldr cumulate (x, [0]) vs
-         where
-            cumulate :: Double -> ([Double], [Double]) -> ([Double], [Double])
-            cumulate _ ([], ys) = ([], ys)
-            cumulate y' (x1:[], ys)
-                    | y' < x1   = ([], ((head ys + 1) : tail ys))
-                    | otherwise = ([], ys)
-            cumulate y' (x1:x2:xs, ys)
-                    | y' < x1   = (xs, ((head ys + 1) : tail ys))
-                    | y' < x2   = ((x2:xs), (1:ys))
-                    | otherwise = cumulate y' ((x2:xs), (0:ys))
 
     layout :: Layout1 Double Double
     layout = layout1_title      ^= title
@@ -97,16 +94,15 @@ plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
            $ defaultLayout1
 
     empirical :: PlotLines Double Double
-    empirical = plot_lines_style ^= line_e
-           $ plot_lines_values   ^= [zip x y]
-           $ plot_lines_title    ^= "Empirical"
-           $ defaultPlotLines
+    empirical = empiricalWith (zip x y)
 
-    line_e :: CairoLineStyle
-    line_e = line_color ^= opaque red   $ line
---     line_t = line_color ^= opaque blue  $ line
---     line_d = line_color ^= opaque green $ line
 
-    line :: CairoLineStyle
-    line   = line_width       ^= 0.8
-           $ defaultPlotLines ^. plot_lines_style
+cumulate :: Double -> ([Double], [Double]) -> ([Double], [Double])
+cumulate _ ([], ys) = ([], ys)
+cumulate y' (x1:[], ys)
+        | y' < x1   = ([], ((head ys + 1) : tail ys))
+        | otherwise = ([], ys)
+cumulate y' (x1:x2:xs, ys)
+        | y' < x1   = (xs, ((head ys + 1) : tail ys))
+        | y' < x2   = ((x2:xs), (1:ys))
+        | otherwise = cumulate y' ((x2:xs), (0:ys))
