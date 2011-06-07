@@ -9,6 +9,7 @@ import Data.Colour.Names
 import Data.Accessor
 
 import Statistics.Types
+import Statistics.Distribution
 import qualified Data.Vector.Unboxed as V
 
 (/.) :: (Real a, Real b, Fractional c) => a -> b -> c
@@ -50,11 +51,11 @@ line_t = line_color ^= opaque blue  $ line
 line_d = line_color ^= opaque green $ line
 
 line :: CairoLineStyle
-line   = line_width       ^= 0.8
+line   = line_width       ^= 1.8
        $ defaultPlotLines ^. plot_lines_style
 
-lineWith :: CairoLineStyle -> String -> [(Double, Double)] ->
-            PlotLines Double Double
+lineWith :: CairoLineStyle -> String -> [(Double, a)] ->
+            PlotLines Double a
 lineWith ls txt vs = plot_lines_style ^= ls
        $ plot_lines_values   ^= [vs]
        $ plot_lines_title    ^= txt
@@ -63,46 +64,48 @@ lineWith ls txt vs = plot_lines_style ^= ls
 theoreticalWith :: [(Double, Double)] -> PlotLines Double Double
 theoreticalWith = lineWith line_t "Theoretical"
 
-empiricalWith :: [(Double, Double)] -> PlotLines Double Double
+empiricalWith :: [(Double, a)] -> PlotLines Double a
 empiricalWith = lineWith line_e "Empirical"
 
 differenceWith :: [(Double, Double)] -> PlotLines Double Double
 differenceWith = lineWith line_d "Difference"
 
-plotDensity :: Sample -> String -> FilePath -> IO ()
-plotDensity vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
+plotDensity :: (ContDistr d) => d -> Sample -> String -> FilePath -> IO ()
+plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
   where
-    n = V.length vs
+    n  = V.length vs
     mx = V.maximum vs
 
     -- divide domain into bins
     bins :: Double
     bins = fromIntegral $ max (n `div` 100) 1000
 
-    x :: [Double]
-    x = map (* ((mx * 1.2) / bins)) [0 .. bins]
+    xs :: [Double]
+    xs = map (* (mx / bins)) [0 .. bins]
 
     -- count how many at each level
-    y :: [Double]
-    y = map (/. n) $ snd $ V.foldr cumulate (x, [0]) vs
+    ys :: [Double]
+    ys =  let counts = count (V.toList vs) xs 
+              scale  =  fromIntegral n * (mx / bins)
+          in  map ( / scale ) $ map fromIntegral counts
 
     layout :: Layout1 Double Double
     layout = layout1_title      ^= title
            $ layout1_background ^= solidFillStyle (opaque white)
-           $ layout1_plots      ^= [ Left  (toPlot empirical) ]
+           $ layout1_plots      ^= [ Left  (toPlot empirical) 
+                                   , Left  (toPlot theoretical) ]
            $ setLayout1Foreground (opaque black)
            $ defaultLayout1
 
     empirical :: PlotLines Double Double
-    empirical = empiricalWith (zip x y)
+    empirical = empiricalWith (zip xs ys)
+
+    theoretical :: PlotLines Double Double
+    theoretical = theoreticalWith ([ (x, density gd x) | x <- xs ])
 
 
-cumulate :: Double -> ([Double], [Double]) -> ([Double], [Double])
-cumulate _ ([], ys) = ([], ys)
-cumulate y' (x1:[], ys)
-        | y' < x1   = ([], ((head ys + 1) : tail ys))
-        | otherwise = ([], ys)
-cumulate y' (x1:x2:xs, ys)
-        | y' < x1   = (xs, ((head ys + 1) : tail ys))
-        | y' < x2   = ((x2:xs), (1:ys))
-        | otherwise = cumulate y' ((x2:xs), (0:ys))
+count :: [Double] -> [Double] -> [Int]
+count samples breaks = map length (foldr go (:[]) breaks samples)
+  where
+    go x r s = let (ys, zs) = break (>= x) s in ys : r zs
+
