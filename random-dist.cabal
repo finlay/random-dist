@@ -42,6 +42,8 @@ Library
 
 Executable test-random-dist
   Main-Is:          test/Main.hs
+  other-modules:    Plot
+                    Plot.Utils
   hs-source-dirs:   .,test
   if flag(test)
     Build-depends:  base >= 4 && < 6,
