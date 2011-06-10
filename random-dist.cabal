@@ -1,26 +1,26 @@
-Name:               random-dist
-Version:            0.1
-Synopsis:           Implementation of various random distributions.
+name:               random-dist
+version:            0.1
+synopsis:           Implementation of various random distributions.
 -- Description:         
 
-Homepage:           https://github.com/finlayt/mwc-random-dist
-License:            BSD3
-License-file:       LICENSE
-Author:             Finlay Thompson
-Maintainer:         Finlay thompson <finlay@dragonfly.co.nz>
-Copyright:          2011 Finlay Thompson
-Category:           Math, Statisics
-Build-type:         Simple
+homepage:           https://github.com/finlayt/mwc-random-dist
+license:            BSD3
+license-file:       LICENSE
+author:             Finlay Thompson
+maintainer:         Finlay thompson <finlay@dragonfly.co.nz>
+copyright:          2011 Finlay Thompson
+category:           Math, Statisics
+build-type:         Simple
 
 cabal-version:      >= 1.8
 extra-source-files:
   README.markdown
 
 flag test
-  Description:      Build test program
+  description:      Build test program
   default:          True
 
-Library
+library
   exposed-modules:
     Statistics.Distribution.Random.Exponential
     Statistics.Distribution.Random.Gamma
@@ -38,28 +38,31 @@ Library
     repa-algorithms
   
   ghc-prof-options: -auto-all
-
-  ghc-options: -Wall -funbox-strict-fields
+  ghc-options:      -Wall -funbox-strict-fields
 
 Executable test-random-dist
-  Main-Is:          test/Main.hs
+  main-Is:          test/Main.hs
+  other-modules:
+    Plot
+    Plot.Utils
   hs-source-dirs:   .,test
   if flag(test)
-    Build-depends:  base >= 4 && < 6,
-                    primitive,
-                    logfloat,
-                    mwc-random,
-                    statistics,
-                    vector,
-                    vector-algorithms,
-                    repa,
-                    repa-algorithms,
-                    data-accessor,
-                    colour,
-                    cairo,
-                    Chart
+    build-depends:
+      base >= 4 && < 6,
+      primitive,
+      logfloat,
+      mwc-random,
+      statistics,
+      vector,
+      vector-algorithms,
+      repa,
+      repa-algorithms,
+      data-accessor,
+      colour,
+      cairo,
+      Chart
   ghc-options:      -Wall
   if !flag(test)
-    Buildable:      False
+    buildable:      False
 
 

@@ -5,7 +5,6 @@
  -}
 
 import           System.Environment (getArgs)
-import           Control.Monad (when)
 import           Data.List (intersperse)
 import           Text.Printf
 
@@ -61,7 +60,7 @@ main = do
     plot cm title "test.svg"
 
     let titledensity = printf "shape = %f, rate = %f" shape rate
-    plotDensity vs titledensity "test-density.svg"
+    plotDensity gd vs titledensity "test-density.svg"
 
     putStrLn $ "Done "++ (show $ V.length vs)
 
