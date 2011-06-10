@@ -70,6 +70,7 @@ empiricalWith = lineWith line_e "Empirical"
 differenceWith :: [(Double, Double)] -> PlotLines Double Double
 differenceWith = lineWith line_d "Difference"
 
+
 plotDensity :: (ContDistr d) => d -> Sample -> String -> FilePath -> IO ()
 plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
   where
@@ -85,14 +86,14 @@ plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) 800 600 f
 
     -- count how many at each level
     ys :: [Double]
-    ys =  let counts = count (V.toList vs) xs 
-              scale  =  fromIntegral n * (mx / bins)
-          in  map ( / scale ) $ map fromIntegral counts
+    ys =  let counts = count (V.toList vs) xs
+              scale  = fromIntegral n * (mx / bins)
+          in  map ((/ scale) . fromIntegral) counts
 
     layout :: Layout1 Double Double
     layout = layout1_title      ^= title
            $ layout1_background ^= solidFillStyle (opaque white)
-           $ layout1_plots      ^= [ Left  (toPlot empirical) 
+           $ layout1_plots      ^= [ Left  (toPlot empirical)
                                    , Left  (toPlot theoretical) ]
            $ setLayout1Foreground (opaque black)
            $ defaultLayout1
