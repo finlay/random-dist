@@ -32,6 +32,7 @@ plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
            $ layout1_plots      ^= [ Left  (toPlot theoretical),
                                      Left  (toPlot empirical),
                                      Right (toPlot difference)]
+           $ layout1_right_axis ^= yaxis
            $ setLayout1Foreground (opaque black)
            $ defaultLayout1
 
@@ -45,10 +46,21 @@ plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
     difference = differenceWith $
                  zipWith (\ (x, t) (_, e) -> (x, t - e)) tv ev
 
+yaxis :: LayoutAxis Double
+yaxis  = laxis_title    ^= "theoretical - empirical"
+       $ laxis_override ^= (axisGridHide . rStyleTicks)
+       $ defaultLayoutAxis
+
+rStyleTicks     :: AxisData x -> AxisData x
+rStyleTicks ad  = ad{ axis_ticks_ = map invert_tick (axis_ticks_ ad) }
+    where
+        invert_tick :: (x,Double) -> (x, Double)
+        invert_tick (x, t) = (x, -t)
+
 line_e, line_t, line_d :: CairoLineStyle
-line_e = line_color ^= opaque red   $ line
-line_t = line_color ^= opaque blue  $ line
-line_d = line_color ^= opaque green $ line
+line_e = line_color ^= withOpacity red   0.8 $ line
+line_t = line_color ^= withOpacity blue  0.8 $ line
+line_d = line_color ^= withOpacity green 0.8 $ line
 
 line :: CairoLineStyle
 line   = line_width       ^= 1.8
