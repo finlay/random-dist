@@ -4,29 +4,24 @@ module Plot (
 ) where
 
 import Graphics.Rendering.Chart
-import Data.Colour
-import Data.Colour.Names
-import Data.Accessor
 
+import Plot.Utils
 import Statistics.Types
 import Statistics.Distribution
 import qualified Data.Vector.Unboxed as V
-
-(/.) :: (Real a, Real b, Fractional c) => a -> b -> c
-(/.) x y = fromRational $ toRational x / toRational y
 
 plot :: Sample -> String -> FilePath -> IO ()
 plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
   where
     n = V.length vs
 
-    tv :: [(Double, Double)]
+    tv, ev, dv :: [(Double, Double)]
     tv = [(fromIntegral i, i /. n) | i <- [1 .. n]]
-
-    ev :: [(Double, Double)]
     ev = zip (map fromIntegral [1 .. n]) (V.toList vs)
+    dv = zipWith (\ (x, t) (_, e) -> (x, t - e)) tv ev
 
     layout :: Layout1 Double Double
+<<<<<<< HEAD
     layout = layout1_title      ^= title
            $ layout1_background ^= solidFillStyle (opaque white)
            $ layout1_plots      ^= [ Left  (toPlot theoretical),
@@ -92,29 +87,20 @@ plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) 800 600 f
     bins :: Double
     bins = fromIntegral $ max (n `div` 100) 1000
 
-    xs :: [Double]
+    xs, ys :: [Double]
     xs = map (* (mx / bins)) [0 .. bins]
-
     -- count how many at each level
-    ys :: [Double]
-    ys =  let counts = count (V.toList vs) xs 
-              scale  =  fromIntegral n * (mx / bins)
-          in  map ( / scale ) $ map fromIntegral counts
+    ys =  let counts = count (V.toList vs) xs
+              scale  = fromIntegral n * (mx / bins)
+          in  map ((/ scale) . fromIntegral) counts
 
     layout :: Layout1 Double Double
-    layout = layout1_title      ^= title
-           $ layout1_background ^= solidFillStyle (opaque white)
-           $ layout1_plots      ^= [ Left  (toPlot empirical) 
-                                   , Left  (toPlot theoretical) ]
-           $ setLayout1Foreground (opaque black)
-           $ defaultLayout1
+    layout = stdLayout title
+               [ Left (toPlot (  empiricalWith (zip xs ys)))
+               , Left (toPlot (theoreticalWith [(x, density gd x) | x <- xs])) ]
 
-    empirical :: PlotLines Double Double
-    empirical = empiricalWith (zip xs ys)
-
-    theoretical :: PlotLines Double Double
-    theoretical = theoreticalWith ([ (x, density gd x) | x <- xs ])
-
+(/.) :: (Real a, Real b, Fractional c) => a -> b -> c
+(/.) x y = fromRational $ toRational x / toRational y
 
 count :: [Double] -> [Double] -> [Int]
 count samples breaks = map length (foldr go (:[]) breaks samples)
