@@ -13,8 +13,12 @@ import Statistics.Types
 import Statistics.Distribution
 import qualified Data.Vector.Unboxed as V
 
+width, height :: Int
+width = 800
+height = 400
+
 plot :: Sample -> String -> FilePath -> IO ()
-plot vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
+plot vs title fn = renderableToSVGFile (toRenderable layout) width height fn
   where
     n = V.length vs
 
@@ -57,7 +61,7 @@ rStyleTicks ad  = ad{ axis_ticks_ = map invert_tick (axis_ticks_ ad) }
 
 
 plotDensity :: (ContDistr d) => d -> Sample -> String -> FilePath -> IO ()
-plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) 800 600 fn
+plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) width height fn
   where
     n  = V.length vs
     mx = V.maximum vs
