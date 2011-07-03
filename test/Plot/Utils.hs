@@ -5,10 +5,11 @@ import Data.Colour.Names
 import Data.Accessor
 import Graphics.Rendering.Chart
 
+
 line_e, line_t, line_d :: CairoLineStyle
-line_e = line_color ^= opaque red   $ line
-line_t = line_color ^= opaque blue  $ line
-line_d = line_color ^= opaque green $ line
+line_e = line_color ^= withOpacity red   0.8 $ line
+line_t = line_color ^= withOpacity blue  0.8 $ line
+line_d = line_color ^= withOpacity green 0.8 $ line
 
 line :: CairoLineStyle
 line   = line_width       ^= 1.8
@@ -21,13 +22,13 @@ lineWith ls txt vs = plot_lines_style ^= ls
        $ plot_lines_title    ^= txt
        $ defaultPlotLines
 
-theoreticalWith :: [(Double, a)] -> PlotLines Double a
+theoreticalWith :: [(Double, Double)] -> PlotLines Double Double
 theoreticalWith = lineWith line_t "Theoretical"
 
 empiricalWith :: [(Double, a)] -> PlotLines Double a
 empiricalWith = lineWith line_e "Empirical"
 
-differenceWith :: [(Double, a)] -> PlotLines Double a
+differenceWith :: [(Double, Double)] -> PlotLines Double Double
 differenceWith = lineWith line_d "Difference"
 
 stdLayout :: (PlotValue x, PlotValue y) =>
