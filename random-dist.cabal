@@ -24,9 +24,11 @@ library
   exposed-modules:
     Statistics.Distribution.Random.Gamma
     Statistics.Distribution.Random.Exponential
+    Statistics.Sampler.Slice
     Statistics.Test.KolmogorovSmirnov
   build-depends:
     base < 5,
+    transformers,
     primitive,
     logfloat,
     mwc-random,
@@ -48,6 +50,7 @@ Executable test-random-dist
   if flag(test)
     build-depends:
       base >= 4 && < 6,
+      transformers,
       primitive,
       logfloat,
       mwc-random,
@@ -59,7 +62,8 @@ Executable test-random-dist
       data-accessor,
       colour,
       cairo,
-      Chart
+      Chart,
+      test-framework
   ghc-options:      -Wall
   if !flag(test)
     buildable:      False
