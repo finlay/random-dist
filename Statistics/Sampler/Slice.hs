@@ -8,14 +8,13 @@ import qualified Statistics.Distribution.Random.Exponential as E
 import           Control.Monad.Primitive (PrimMonad, PrimState)
 
 import           Prelude hiding (max)
-import           Control.Monad.IO.Class
     
 -- | slice sampling as described in
 -- Radford M. Neal, "Slice sampling", 
 -- Ann. Statist. Volume 31, Number 3 (2003), 705-767.
 -- http://projecteuclid.org/euclid.aos/1056562461
 
-slice :: (PrimMonad m, MonadIO m) =>
+slice :: (PrimMonad m) =>
          (Double -> Double)  -- ^ x -> log(f x) where f is probibility function
       -> Double              -- ^ width of step out size (approximate scale parameter)
       -> Int                 -- ^ maximum number of step outs
@@ -28,7 +27,6 @@ slice g width max x0 rng =
     -- 1. define slice
     e <- E.exponential rng
     let z = g x0 - e
-
 
     -- 2. find interval
     u <- R.uniform rng
@@ -46,6 +44,7 @@ slice g width max x0 rng =
                 then l'
                 else calc_left (n-1) (l' - width)
 
+
     let right = calc_right k r
         calc_right 0 r' = r'
         calc_right n r' =
@@ -58,8 +57,7 @@ slice g width max x0 rng =
           do
             u' <- R.uniform rng
             let x = left' + u' * (right' - left')
-            liftIO $ print (left', x , g x , z , right')
-            if z >= g x
+            if z < g x
               then return x -- accept 
               else 
                 if x < x0
