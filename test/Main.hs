@@ -41,29 +41,26 @@ mainSlice = do
     let size :: Int
         title :: String
         outfile :: String
-        (size, sampler, gd, title, outfile) =
+        (size, sampler, gd, initial, title, outfile) =
           case args of
-            [size', "gamma", shape', rate' ] -> (read size', slice (log . (density  gd)) 0.1 10, gammad, title', outfile')
-                                                where
-                                                   shape :: Double = read shape'
-                                                   rate  :: Double = read rate'
-                                                   gammad  = gammaDistr shape (1/rate) 
-                                                   title' = printf "shape = %f, rate = %f" shape rate
-                                                   outfile' =  printf "slice-%f-%f.csv" shape rate 
+            [size', "gamma", shape', rate' ] -> 
+                 (read size', slice (log . (density  gammad)) 1 10, gammad, shape/rate, title', outfile')
+                    where
+                       shape :: Double = read shape'
+                       rate  :: Double = read rate'
+                       gammad  = gammaDistr shape (1/rate)
+                       title' = printf "shape = %f, rate = %f" shape rate
+                       outfile' =  printf "slice-%f-%f.csv" shape rate 
                                                 
-            _                               -> error "Usage: ./test size gamma shape rate"
+            _ -> error "Usage: ./test size gamma shape rate"
 
     rng <- R.create
 
-
-    print size
-    --
     --  get samples
     let sample res = do
-        print res
         !ns <- sampler (head res) rng
         return (ns:res)
-    samples <- foldr1 (>=>) (replicate (size-1) sample) [mean gd]
+    samples <- foldr1 (>=>) (replicate (size-1) sample) [initial]
     let v = V.fromList samples
 
     -- print out samples
