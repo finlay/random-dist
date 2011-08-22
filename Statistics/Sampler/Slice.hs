@@ -5,6 +5,7 @@ module Statistics.Sampler.Slice (
 
 import qualified System.Random.MWC as R
 import qualified Statistics.Distribution.Random.Exponential as E
+import           Control.Monad (when)
 import           Control.Monad.Primitive (PrimMonad, PrimState)
 
 import           Prelude hiding (max)
@@ -23,10 +24,14 @@ slice :: (PrimMonad m) =>
       -> m Double            -- ^ sample value
 slice g width max x0 rng = 
   do
+    let g0 = g x0
+
+    when (isInfinite g0) 
+        error "Infinite value found in slice sampler"
     
     -- 1. define slice
     e <- E.exponential rng
-    let z = g x0 - e
+    let z = g0 - e
 
     -- 2. find interval
     u <- R.uniform rng
