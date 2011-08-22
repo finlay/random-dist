@@ -1,6 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Statistics.Sampler.Slice (
-  slice
+  slice,
+  adaptWidth
 ) where
 
 import qualified System.Random.MWC as R
@@ -26,7 +27,7 @@ slice g width max x0 rng =
   do
     let g0 = g x0
 
-    when (isInfinite g0) 
+    when (isInfinite g0) $
         error "Infinite value found in slice sampler"
     
     -- 1. define slice
@@ -71,4 +72,5 @@ slice g width max x0 rng =
 
     sample left right
 
-
+adaptWidth :: Double -> Double -> Double
+adaptWidth sumdiff iter = 2 * sumdiff / iter / (iter - 1)
