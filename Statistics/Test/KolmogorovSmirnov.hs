@@ -65,9 +65,9 @@ k n d =
                     elm i j 
                         | i - j + 1 < 0     = 0.0
                         | i < w && j > 1    = 1.0 / factorial (i - j + 1)
-                        | j == 1 && i < w   = (1-h^i)/factorial i
-                        | i == w && j > 1   = (1-h^(w-(j-1)))/factorial (w-(j-1))
-                        | i == w && j == 1  = (1-2*h^w + (max 0 (2*h-1))^w)/factorial w
+                        | j == 1 && i < w   = (1-h^^i)/factorial i
+                        | i == w && j > 1   = (1-h^^(w-(j-1)))/factorial (w-(j-1))
+                        | i == w && j == 1  = (1-2*h^^w + (max 0 (2*h-1))^^w)/factorial w
                         | otherwise         = 0.0
         mH = R.fromList (Z :. m :. m) (initH m)
 
@@ -97,6 +97,6 @@ k n d =
                             then (qq - 140, ss' * 1e140)
                             else (qq,       ss')
 
-    in  s' * (10.0 ^ eQ')
+    in  s' * (10.0 ^^ eQ')
 
 
