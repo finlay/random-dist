@@ -17,6 +17,7 @@ import           Data.Vector.Algorithms.Intro (sort)
 import qualified System.Random.MWC as R
 import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
+import           Statistics.Constants
 
 import           Statistics.Distribution.Random.Gamma
 import           Statistics.Test.KolmogorovSmirnov
@@ -44,11 +45,12 @@ mainSlice = do
         (size, sampler, gd, initial, title, outfile) =
           case args of
             [size', "gamma", shape', rate' ] -> 
-                 (read size', slice (log . (density  gammad)) 1 10, gammad, shape/rate, title', outfile')
+                 (read size', slice slst (log . (density  gammad)), gammad, shape/rate, title', outfile')
                     where
                        shape :: Double = read shape'
                        rate  :: Double = read rate'
                        gammad  = gammaDistr shape (1/rate)
+                       slst   = adaptOff (newSlicerState 0.0001 m_pos_inf 1)
                        title' = printf "shape = %f, rate = %f" shape rate
                        outfile' =  printf "slice-%f-%f.csv" shape rate 
                                                 
@@ -58,10 +60,11 @@ mainSlice = do
 
     --  get samples
     let sample res = do
-        !ns <- sampler (head res) rng
+        !(_, ns) <- sampler (head res) rng
         return (ns:res)
     samples <- foldr1 (>=>) (replicate (size-1) sample) [initial]
     let v = V.fromList samples
+
 
     -- print out samples
     let pv = "slice\n" ++ (concat $ intersperse "\n" $ map show $ V.toList v)
