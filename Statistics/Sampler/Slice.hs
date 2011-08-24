@@ -10,9 +10,9 @@ import           Control.Monad (when)
 import           Control.Monad.Primitive (PrimMonad, PrimState)
 
 import           Prelude hiding (max)
-    
+
 -- | slice sampling as described in
--- Radford M. Neal, "Slice sampling", 
+-- Radford M. Neal, "Slice sampling",
 -- Ann. Statist. Volume 31, Number 3 (2003), 705-767.
 -- http://projecteuclid.org/euclid.aos/1056562461
 
@@ -23,13 +23,13 @@ slice :: (PrimMonad m) =>
       -> Double              -- ^ current value
       -> R.Gen (PrimState m) -- ^ a random number generator
       -> m Double            -- ^ sample value
-slice g width max x0 rng = 
+slice g width max x0 rng =
   do
     let g0 = g x0
 
     when (isInfinite g0) $
         error "Infinite value found in slice sampler"
-    
+
     -- 1. define slice
     e <- E.exponential rng
     let z = g0 - e
@@ -39,14 +39,14 @@ slice g width max x0 rng =
     let l = x0 - width * u
         r = l + width
 
-    v :: Double <- R.uniform rng 
+    v :: Double <- R.uniform rng
     let j = floor (fromIntegral max * v)
         k = (max - 1) - j
 
     let left = calc_left j l
         calc_left 0 l' = l'
-        calc_left n l' = 
-            if z >= g l' 
+        calc_left n l' =
+            if z >= g l'
                 then l'
                 else calc_left (n-1) (l' - width)
 
@@ -59,13 +59,13 @@ slice g width max x0 rng =
                 else calc_right (n-1) (r' + width)
 
     -- 3. loop until accept (guaranteed)
-    let sample left' right' = 
+    let sample left' right' =
           do
             u' <- R.uniform rng
             let x = left' + u' * (right' - left')
             if z < g x
-              then return x -- accept 
-              else 
+              then return x -- accept
+              else
                 if x < x0
                   then sample x     right'
                   else sample left' x
