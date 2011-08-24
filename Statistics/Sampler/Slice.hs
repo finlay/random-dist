@@ -40,23 +40,17 @@ slice g width max x0 rng =
         r = l + width
 
     v :: Double <- R.uniform rng
-    let j = floor (fromIntegral max * v)
+
+    let calc :: (Double -> Double) -> Int -> Double -> Double
+        calc _step 0 x             = x
+        calc  step n x | z >= g x  = x
+                       | otherwise = calc step (n - 1) (step x)
+
+        j = floor (fromIntegral max * v)
         k = (max - 1) - j
 
-    let left = calc_left j l
-        calc_left 0 l' = l'
-        calc_left n l' =
-            if z >= g l'
-                then l'
-                else calc_left (n-1) (l' - width)
-
-
-    let right = calc_right k r
-        calc_right 0 r' = r'
-        calc_right n r' =
-            if z >= g r'
-                then r'
-                else calc_right (n-1) (r' + width)
+        left  = calc (\ x -> x - width) j l
+        right = calc (\ x -> x + width) k r
 
     -- 3. loop until accept (guaranteed)
     let sample left' right' =
