@@ -13,9 +13,9 @@ import           Control.Monad (when)
 import           Control.Monad.Primitive (PrimMonad, PrimState)
 
 import           Prelude hiding (max)
-    
+
 -- | slice sampling as described in
--- Radford M. Neal, "Slice sampling", 
+-- Radford M. Neal, "Slice sampling",
 -- Ann. Statist. Volume 31, Number 3 (2003), 705-767.
 -- http://projecteuclid.org/euclid.aos/1056562461
 
@@ -90,7 +90,7 @@ slice st g x0 rng =
             | otherwise        = calc_right (n-1) (r' + (width st))
 
     -- 3. loop until accept (guaranteed)
-    let sample left' right' = 
+    let sample left' right' =
           do
             u' <- R.uniform rng
             let x = left' + u' * (right' - left')
