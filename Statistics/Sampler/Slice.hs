@@ -52,7 +52,7 @@ slice :: (PrimMonad m) =>
       -> Double                   -- ^ current value
       -> R.Gen (PrimState m)      -- ^ a random number generator
       -> m (SlicerState, Double)  -- ^ return slicer state and new sample value
-slice st g x0 rng = 
+slice st g x0 rng =
   do
     let g0 = g x0
 
@@ -61,7 +61,7 @@ slice st g x0 rng =
 
     when (isNaN g0) $
         error $ "NaN found in slice sampler: " ++ (show x0) ++ " -> " ++ (show g0)
-    
+
     -- 1. define slice
     e <- E.exponential rng
     let z = g0 - e
@@ -71,19 +71,19 @@ slice st g x0 rng =
     let l = x0 - (width st) * u
         r = l + (width st)
 
-    v :: Double <- R.uniform rng 
+    v :: Double <- R.uniform rng
     let j = floor (fromIntegral (steps st) * v)
         k = ((steps st) - 1) - j
 
     let left = calc_left j l
-        calc_left n l'  
+        calc_left n l'
             | l' < (lower st)  = lower st
             | n == 0           = l'
             | z >= g l'        = l'
             | otherwise        = calc_left  (n-1) (l' - (width st))
 
     let right = calc_right k r
-        calc_right n r' 
+        calc_right n r'
             | r' > (upper st)  = upper st
             | n == 0           = r'
             | z >= g r'        = r'
@@ -95,8 +95,8 @@ slice st g x0 rng =
             u' <- R.uniform rng
             let x = left' + u' * (right' - left')
             if z - m_epsilon <= g x
-              then return x -- accept 
-              else 
+              then return x -- accept
+              else
                 if x < x0
                   then sample x     right'
                   else sample left' x
@@ -106,7 +106,7 @@ slice st g x0 rng =
     let st' = if adapt st
                 then adaptSlicer x0 x1 st
                 else st
-    
+
     return (st', x1)
 
 adaptSlicer :: Double -> Double -> SlicerState -> SlicerState
@@ -117,7 +117,7 @@ adaptSlicer old new oldst = newst
     newst    = oldst {
                     sumdiff = sumdiff',
                     iter    = (iter oldst) + 1,
-                    width   = if (iter oldst) > 50 
+                    width   = if (iter oldst) > 50
                                  then (2 * sumdiff' / (iterf * (iterf - 1)))
                                  else (width oldst)
                     }
