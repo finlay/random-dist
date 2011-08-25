@@ -57,10 +57,10 @@ slice st g x0 rng =
     let g0 = g x0
 
     when (isInfinite g0) $
-        error $ "Infinite value found in slice sampler: " ++ (show x0) ++ " -> " ++ (show g0)
+        error $ "Infinite value found in slice sampler: " ++ show x0 ++ " -> " ++ show g0
 
     when (isNaN g0) $
-        error $ "NaN found in slice sampler: " ++ (show x0) ++ " -> " ++ (show g0)
+        error $ "NaN found in slice sampler: " ++ show x0 ++ " -> " ++ show g0
 
     -- 1. define slice
     e <- E.exponential rng
@@ -68,26 +68,26 @@ slice st g x0 rng =
 
     -- 2. find interval
     u <- R.uniform rng
-    let l = x0 - (width st) * u
-        r = l + (width st)
+    let l = x0 - width st * u
+        r = l + width st
 
     v :: Double <- R.uniform rng
     let j = floor (fromIntegral (steps st) * v)
-        k = ((steps st) - 1) - j
+        k = (steps st - 1) - j
 
     let left = calc_left j l
         calc_left n l'
-            | l' < (lower st)  = lower st
-            | n == 0           = l'
-            | z >= g l'        = l'
-            | otherwise        = calc_left  (n-1) (l' - (width st))
+            | l' < lower st  = lower st
+            | n == 0         = l'
+            | z >= g l'      = l'
+            | otherwise      = calc_left  (n-1) (l' - width st)
 
     let right = calc_right k r
         calc_right n r'
-            | r' > (upper st)  = upper st
-            | n == 0           = r'
-            | z >= g r'        = r'
-            | otherwise        = calc_right (n-1) (r' + (width st))
+            | r' > upper st  = upper st
+            | n == 0         = r'
+            | z >= g r'      = r'
+            | otherwise      = calc_right (n-1) (r' + width st)
 
     -- 3. loop until accept (guaranteed)
     let sample left' right' =
@@ -103,9 +103,8 @@ slice st g x0 rng =
 
     x1 <- sample left right
 
-    let st' = if adapt st
-                then adaptSlicer x0 x1 st
-                else st
+    let st' | adapt st  = adaptSlicer x0 x1 st
+            | otherwise = st
 
     return (st', x1)
 
@@ -113,12 +112,12 @@ adaptSlicer :: Double -> Double -> SlicerState -> SlicerState
 adaptSlicer old new oldst = newst
   where
     iterf    = fromIntegral (iter oldst)
-    sumdiff' = (sumdiff oldst) +  iterf * (abs (new - old))
+    sumdiff' = sumdiff oldst +  iterf * abs (new - old)
     newst    = oldst {
                     sumdiff = sumdiff',
-                    iter    = (iter oldst) + 1,
-                    width   = if (iter oldst) > 50
-                                 then (2 * sumdiff' / (iterf * (iterf - 1)))
-                                 else (width oldst)
+                    iter    = iter oldst + 1,
+                    width   = if iter oldst > 50
+                                 then 2 * sumdiff' / (iterf * (iterf - 1))
+                                 else width oldst
                     }
 
