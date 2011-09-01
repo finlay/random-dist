@@ -14,7 +14,7 @@ import           Control.Monad ( (>=>) )
 
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Algorithms.Intro (sort)
-import qualified System.Random.MWC as R
+import qualified Random.CRI.MWC as R
 import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
 import           Statistics.Constants
