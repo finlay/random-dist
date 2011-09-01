@@ -1,11 +1,11 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Statistics.Distribution.Random.Exponential (
     exponential
 ) where
 
-
-import qualified System.Random.MWC   as R
 import Control.Monad
-import Control.Monad.Primitive (PrimMonad, PrimState)
+import Random.CRI
+import Statistics.Distribution.Random.Uniform
 
-exponential :: PrimMonad m => R.Gen (PrimState m) -> m Double
-exponential rng = liftM (negate . log) (R.uniform rng)
+exponential :: PrimSource m g Double => g m -> m Double
+exponential rng = liftM (negate . log) (uniform rng)

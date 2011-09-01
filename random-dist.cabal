@@ -24,14 +24,16 @@ library
   exposed-modules:
     Statistics.Distribution.Random.Gamma
     Statistics.Distribution.Random.Exponential
+    Statistics.Distribution.Random.Uniform
+    Statistics.Distribution.Random.Normal
     Statistics.Sampler.Slice
     Statistics.Test.KolmogorovSmirnov
   build-depends:
     base < 5,
+    cri,
     transformers,
     primitive,
     logfloat,
-    mwc-random,
     statistics,
     vector,
     vector-algorithms,

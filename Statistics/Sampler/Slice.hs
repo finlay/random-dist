@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, FlexibleContexts #-}
 module Statistics.Sampler.Slice (
   slice,
   newSlicerState,
@@ -6,11 +6,11 @@ module Statistics.Sampler.Slice (
   SlicerState()
 ) where
 
-import qualified System.Random.MWC as R
-import qualified Statistics.Distribution.Random.Exponential as E
+import           Random.CRI
+import qualified Statistics.Distribution.Random.Exponential as D
+import qualified Statistics.Distribution.Random.Uniform as D
 import           Statistics.Constants (m_epsilon)
 import           Control.Monad (when)
-import           Control.Monad.Primitive (PrimMonad, PrimState)
 
 import           Prelude hiding (max)
 
@@ -46,11 +46,11 @@ newSlicerState l u w = SlicerState {
 adaptOff :: SlicerState -> SlicerState
 adaptOff st = st { adapt = False }
 
-slice :: (PrimMonad m) =>
+slice :: (PrimSource m g Double) =>
          SlicerState
       -> (Double -> Double)       -- ^ x -> log(f x) where f is proportional to probibility density
       -> Double                   -- ^ current value
-      -> R.Gen (PrimState m)      -- ^ a random number generator
+      -> g m                      -- ^ a random number generator
       -> m (SlicerState, Double)  -- ^ return slicer state and new sample value
 slice st g x0 rng = 
   do
@@ -63,15 +63,15 @@ slice st g x0 rng =
         error $ "NaN found in slice sampler: " ++ (show x0) ++ " -> " ++ (show g0)
     
     -- 1. define slice
-    e <- E.exponential rng
+    e <- D.exponential rng
     let z = g0 - e
 
     -- 2. find interval
-    u <- R.uniform rng
+    u <- D.uniform rng
     let l = x0 - (width st) * u
         r = l + (width st)
 
-    v :: Double <- R.uniform rng 
+    v :: Double <- D.uniform rng 
     let j = floor (fromIntegral (steps st) * v)
         k = ((steps st) - 1) - j
 
@@ -92,7 +92,7 @@ slice st g x0 rng =
     -- 3. loop until accept (guaranteed)
     let sample left' right' =
           do
-            u' <- R.uniform rng
+            u' <- D.uniform rng
             let x = left' + u' * (right' - left')
             if z - m_epsilon <= g x
               then return x -- accept 
