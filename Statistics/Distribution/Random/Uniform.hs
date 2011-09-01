@@ -5,5 +5,5 @@ module Statistics.Distribution.Random.Uniform (
 
 import Random.CRI
 
-uniform :: PrimSource m g a => g m -> m a
-uniform = prandom
+uniform :: Source m g a => g m -> m a
+uniform = grandom

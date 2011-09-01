@@ -7,5 +7,5 @@ import Control.Monad
 import Random.CRI
 import Statistics.Distribution.Random.Uniform
 
-exponential :: PrimSource m g Double => g m -> m Double
+exponential :: Source m g Double => g m -> m Double
 exponential rng = liftM (negate . log) (uniform rng)

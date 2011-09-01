@@ -62,13 +62,13 @@ horner :: [Double] -> Double -> Double
 horner q r = foldl' (\ a b -> (a + b) * r) 0 q
 {-# INLINE horner #-}
 
-gamma :: (PrimSource m g Double, PrimSource m g Word32) => Double -> Double -> g m -> m Double
+gamma :: (Source m g Double, Source m g Word32) => Double -> Double -> g m -> m Double
 gamma shape scale rng
     | shape == 0    =  return 0
     | shape <  1    =  gammaGS shape scale rng
     | otherwise     =  gammaGD shape scale rng
 
-gammaGS :: (PrimSource m g Double, PrimSource m g Word32) => Double -> Double -> g m -> m Double
+gammaGS :: (Source m g Double, Source m g Word32) => Double -> Double -> g m -> m Double
 gammaGS shape scale rng =
     let e  = 1 + exp_m1 * shape
         go = do
@@ -82,7 +82,7 @@ gammaGS shape scale rng =
             if accept then return (scale * x) else go
     in go
 
-gammaGD :: (PrimSource m g Double, PrimSource m g Word32) => Double -> Double -> g m -> m Double
+gammaGD :: (Source m g Double, Source m g Word32) => Double -> Double -> g m -> m Double
 gammaGD shape scale rng =
 
     let s2 = shape - 0.5

@@ -46,7 +46,7 @@ newSlicerState l u w = SlicerState {
 adaptOff :: SlicerState -> SlicerState
 adaptOff st = st { adapt = False }
 
-slice :: (PrimSource m g Double) =>
+slice :: (Source m g Double) =>
          SlicerState
       -> (Double -> Double)       -- ^ x -> log(f x) where f is proportional to probibility density
       -> Double                   -- ^ current value

@@ -18,7 +18,7 @@ data T = T {-# UNPACK #-} !Double {-# UNPACK #-} !Double
 -- Compared to the ziggurat algorithm usually used, this is slower,
 -- but generates more independent variates that pass stringent tests
 -- of randomness.
-normal :: (PrimSource m g Double, PrimSource m g Word32) => g m -> m Double
+normal :: (Source m g Double, Source m g Word32) => g m -> m Double
 normal gen = loop
   where
     loop = do
