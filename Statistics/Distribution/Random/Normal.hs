@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE BangPatterns #-}
 module Statistics.Distribution.Random.Normal (normal) where
 
 import Control.Monad
