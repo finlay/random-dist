@@ -14,3 +14,5 @@ CODAchain2.txt
 CODAindex.txt
 test/parser/classic-bugs/vol1/line/jags.cmd
 sandpit/*.csv
+*.csv
+*.svg
