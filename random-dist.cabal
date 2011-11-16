@@ -41,7 +41,7 @@ library
     repa-algorithms
   
   ghc-prof-options: -auto-all
-  ghc-options:      -Wall -funbox-strict-fields
+  ghc-options:      -O2 -Wall -funbox-strict-fields
 
 Executable test-random-dist
   main-Is:          test/Main.hs

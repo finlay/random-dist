@@ -34,26 +34,24 @@ q = [0.6931471805599453,
 
 exponential :: Source m g Double => g m -> m Double
 exponential rng = 
-  do
     let q0 = q !! 0
-    let mk_au a u  
+        mk_au :: Double -> Double -> (Double, Double)
+        mk_au a u  
             | u > 1.0   = (a, u - 1.0)
             | otherwise = mk_au (a + q0) (u + u)
 
-    u' <- uniform rng
-    let a, u :: Double
-        (a, u) = mk_au 0.0 (u' + u')
-
-    let go a u umin i = do 
-        ustar <- uniform rng
-        let umin' = min ustar umin
-        if u > q !! i
-            then go a u umin' (i + 1)
-            else return (a + umin' * q0)
-
-    if u <= q0
-        then return (a + u)
-        else do
-            us <- uniform rng
-            go a u us 1
+        go a u umin i = do 
+            ustar <- uniform rng
+            let umin' = min ustar umin
+            if u > q !! i
+                then go a u umin' (i + 1)
+                else return (a + umin' * q0)
+    in do
+        u' <- uniform rng
+        let (a, u) = mk_au 0.0 (u' + u')
+        if u <= q0
+            then return (a + u)
+            else do
+                us <- uniform rng
+                go a u us 1
 
