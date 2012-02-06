@@ -18,9 +18,9 @@ import qualified Random.CRI.MWC as R
 import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
 import           Statistics.Constants
+import           Statistics.Test.KolmogorovSmirnov
 
 import           Statistics.Distribution.Random.Gamma
-import           Statistics.Test.KolmogorovSmirnov
 import           Statistics.Sampler.Slice
 
 import           Plot
@@ -72,7 +72,8 @@ mainSlice = do
     --  benchmark times
 
     --  calc K-S test statistic
-    let (d, p) = kolmogorovSmirnov gd v
+    let d = kolmogorovSmirnovD gd v
+    let p = kolmogorovSmirnovProbability (V.length v) d
 
     putStrLn $ printf "D = %f, p = %f" d p
 

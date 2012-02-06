@@ -27,7 +27,6 @@ library
     Statistics.Distribution.Random.Uniform
     Statistics.Distribution.Random.Normal
     Statistics.Sampler.Slice
-    Statistics.Test.KolmogorovSmirnov
   build-depends:
     base < 5,
     cri,
@@ -36,9 +35,7 @@ library
     logfloat,
     statistics,
     vector,
-    vector-algorithms,
-    repa,
-    repa-algorithms
+    vector-algorithms
   
   ghc-prof-options: -auto-all
   ghc-options:      -O2 -Wall -funbox-strict-fields
