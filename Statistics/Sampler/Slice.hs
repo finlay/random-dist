@@ -9,7 +9,7 @@ module Statistics.Sampler.Slice (
 import           Random.CRI
 import qualified Statistics.Distribution.Random.Exponential as D
 import qualified Statistics.Distribution.Random.Uniform as D
-import           Statistics.Constants (m_epsilon)
+import           Numeric.MathFunctions.Constants (m_epsilon)
 import           Control.Monad (when)
 
 import           Prelude hiding (max)

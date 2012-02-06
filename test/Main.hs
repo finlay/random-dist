@@ -17,7 +17,7 @@ import           Data.Vector.Algorithms.Intro (sort)
 import qualified Random.CRI.MWC as R
 import           Statistics.Distribution
 import           Statistics.Distribution.Gamma
-import           Statistics.Constants
+import           Numeric.MathFunctions.Constants
 import           Statistics.Test.KolmogorovSmirnov
 
 import           Statistics.Distribution.Random.Gamma

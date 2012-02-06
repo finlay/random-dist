@@ -34,6 +34,7 @@ library
     primitive,
     logfloat,
     statistics,
+    math-functions,
     vector,
     vector-algorithms
   
