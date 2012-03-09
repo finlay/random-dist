@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables, FlexibleContexts, BangPatterns #-}
 module Statistics.Sampler.Slice (
   slice,
   newSlicerState,
@@ -20,13 +20,13 @@ import           Prelude hiding (max)
 -- http://projecteuclid.org/euclid.aos/1056562461
 
 data SlicerState  = SlicerState {
-    lower    :: Double,             -- ^ lower bound of distribution
-    upper    :: Double,             -- ^ upper bound of distribution
-    width    :: Double,             -- ^ width of step out size (approximate scale parameter)
-    steps    :: Int,                -- ^ maximum number of step outs
-    adapt    :: Bool,               -- ^ adapt phase underway
-    sumdiff  :: Double,             -- ^ store sumdiff for adaption phase
-    iter     :: Int                 -- ^ number of iterations
+    lower    :: !Double,             -- ^ lower bound of distribution
+    upper    :: !Double,             -- ^ upper bound of distribution
+    width    :: !Double,             -- ^ width of step out size (approximate scale parameter)
+    steps    :: !Int,                -- ^ maximum number of step outs
+    adapt    :: !Bool,               -- ^ adapt phase underway
+    sumdiff  :: !Double,             -- ^ store sumdiff for adaption phase
+    iter     :: !Int                 -- ^ number of iterations
     } deriving Show
 
 newSlicerState :: Double    -- ^ lower bound
@@ -54,7 +54,7 @@ slice :: (Source m g Double) =>
       -> m (SlicerState, Double)  -- ^ return slicer state and new sample value
 slice st g x0 rng = 
   do
-    let g0 = g x0
+    let !g0 = g x0
 
     when (isInfinite g0) $
         error $ "Infinite value found in slice sampler: " ++ (show x0) ++ " -> " ++ (show g0)
@@ -64,25 +64,25 @@ slice st g x0 rng =
     
     -- 1. define slice
     e <- D.exponential rng
-    let z = g0 - e
+    let !z = g0 - e
 
     -- 2. find interval
     u <- D.uniform rng
-    let l = x0 - (width st) * u
-        r = l + (width st)
+    let !l = x0 - (width st) * u
+        !r = l + (width st)
 
     v :: Double <- D.uniform rng 
-    let j = floor (fromIntegral (steps st) * v)
-        k = ((steps st) - 1) - j
+    let !j = floor (fromIntegral (steps st) * v)
+        !k = ((steps st) - 1) - j
 
-    let left = calc_left j l
+    let !left = calc_left j l
         calc_left n l'  
             | l' < (lower st)  = lower st
             | n == 0           = l'
             | z >= g l'        = l'
             | otherwise        = calc_left  (n-1) (l' - (width st))
 
-    let right = calc_right k r
+    let !right = calc_right k r
         calc_right n r' 
             | r' > (upper st)  = upper st
             | n == 0           = r'
@@ -93,7 +93,7 @@ slice st g x0 rng =
     let sample left' right' =
           do
             u' <- D.uniform rng
-            let x = left' + u' * (right' - left')
+            let !x = left' + u' * (right' - left')
             if z - m_epsilon <= g x
               then return x -- accept 
               else 
@@ -101,20 +101,20 @@ slice st g x0 rng =
                   then sample x     right'
                   else sample left' x
 
-    x1 <- sample left right
+    !x1 <- sample left right
 
-    let st' = if adapt st
-                then adaptSlicer x0 x1 st
-                else st
+    let !st' = if adapt st
+                 then adaptSlicer x0 x1 st
+                 else st
     
     return (st', x1)
 
 adaptSlicer :: Double -> Double -> SlicerState -> SlicerState
 adaptSlicer old new oldst = newst
   where
-    iterf    = fromIntegral (iter oldst)
-    sumdiff' = (sumdiff oldst) +  iterf * (abs (new - old))
-    newst    = oldst {
+    !iterf    = fromIntegral (iter oldst)
+    !sumdiff' = (sumdiff oldst) +  iterf * (abs (new - old))
+    !newst    = oldst {
                     sumdiff = sumdiff',
                     iter    = (iter oldst) + 1,
                     width   = if (iter oldst) > 50 
