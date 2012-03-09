@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Statistics.Distribution.Random.Gamma (
    gamma
 ) where
@@ -19,11 +20,13 @@ module Statistics.Distribution.Random.Gamma (
  -  Computing, 12, 223-246.
  -}
 
-import qualified System.Random.MWC as R
-import qualified Statistics.Distribution.Random.Exponential as E
-import           Control.Monad.Primitive (PrimMonad, PrimState)
+import qualified Statistics.Distribution.Random.Exponential as D
+import qualified Statistics.Distribution.Random.Normal as D
+import qualified Statistics.Distribution.Random.Uniform as D
 import           Data.List (foldl')
 import           Data.Number.LogFloat (expm1)
+import           Data.Word
+import           Random.CRI
 
 sqrt32, exp_m1 :: Double
 sqrt32 = sqrt 32
@@ -59,18 +62,18 @@ horner :: [Double] -> Double -> Double
 horner q r = foldl' (\ a b -> (a + b) * r) 0 q
 {-# INLINE horner #-}
 
-gamma :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
+gamma :: (Source m g Double, Source m g Word32) => Double -> Double -> g m -> m Double
 gamma shape scale rng
     | shape == 0    =  return 0
     | shape <  1    =  gammaGS shape scale rng
     | otherwise     =  gammaGD shape scale rng
 
-gammaGS :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
+gammaGS :: (Source m g Double, Source m g Word32) => Double -> Double -> g m -> m Double
 gammaGS shape scale rng =
     let e  = 1 + exp_m1 * shape
         go = do
-            ru <- R.uniform     rng
-            re <- E.exponential rng
+            ru <- D.uniform     rng
+            re <- D.exponential rng
             let p                  = e * ru
                 x      | p >= 1    = - log ((e - p) / shape)
                        | otherwise = exp (log p / shape)
@@ -79,7 +82,7 @@ gammaGS shape scale rng =
             if accept then return (scale * x) else go
     in go
 
-gammaGD :: (PrimMonad m) => Double -> Double -> R.Gen (PrimState m) -> m Double
+gammaGD :: (Source m g Double, Source m g Word32) => Double -> Double -> g m -> m Double
 gammaGD shape scale rng =
 
     let s2 = shape - 0.5
@@ -99,8 +102,8 @@ gammaGD shape scale rng =
             where v = t / (s + s)
 
         choose_t = do
-            e  <- E.exponential rng
-            u' <- R.uniform rng
+            e  <- D.exponential rng
+            u' <- D.uniform rng
             let uu = u' + u' - 1
             let tt = if uu < 0 then b - si * e else b + si * e
             if tt >= -0.71874483771719
@@ -112,14 +115,14 @@ gammaGD shape scale rng =
                 else choose_t 
 
     in do
-        t <- R.normal rng
+        t <- D.normal rng
         let x = s + 0.5 * t
             ret_val = scale * x * x
         if t >= 0
             then return ret_val
             else do
 
-                u <- R.uniform rng
+                u <- D.uniform rng
                 if d * u <= t * t * t
                     then return ret_val
                     else do

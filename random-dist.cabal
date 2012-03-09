@@ -24,22 +24,22 @@ library
   exposed-modules:
     Statistics.Distribution.Random.Gamma
     Statistics.Distribution.Random.Exponential
+    Statistics.Distribution.Random.Uniform
+    Statistics.Distribution.Random.Normal
     Statistics.Sampler.Slice
-    Statistics.Test.KolmogorovSmirnov
   build-depends:
     base < 5,
+    cri,
     transformers,
     primitive,
     logfloat,
-    mwc-random,
     statistics,
+    math-functions,
     vector,
-    vector-algorithms,
-    repa,
-    repa-algorithms
+    vector-algorithms
   
   ghc-prof-options: -auto-all
-  ghc-options:      -Wall -funbox-strict-fields
+  ghc-options:      -O2 -Wall -funbox-strict-fields
 
 Executable test-random-dist
   main-Is:          test/Main.hs
@@ -54,6 +54,8 @@ Executable test-random-dist
       primitive,
       logfloat,
       mwc-random,
+      cri,
+      cri-mwc-random,
       statistics,
       vector,
       vector-algorithms,
