@@ -81,9 +81,9 @@ mainSlice = do
     let vs = V.modify sort v
     let cm = V.map (cumulative gd) vs
 
-    plot cm title "test-slice.svg"
+    _ <- plot cm title "test-slice.svg"
 
-    plotDensity gd vs title "test-slice-density.svg"
+    _ <- plotDensity gd vs title "test-slice-density.svg"
 
     putStrLn $ "Done "++ (show $ V.length vs)
 
@@ -115,7 +115,8 @@ mainGamma = do
 
     --  calc K-S test statistic
     let gd = gammaDistr shape (1/rate)
-    let (d, p) = kolmogorovSmirnov gd v
+    let d = kolmogorovSmirnovD gd v
+    let p = kolmogorovSmirnovProbability (V.length v) d
 
     putStrLn $ printf "D = %f, p = %f" d p
 
@@ -124,10 +125,10 @@ mainGamma = do
     let cm = V.map (cumulative gd) vs
     let title = printf "D = %f, p-value = %f" d p
 
-    plot cm title "test.svg"
+    _ <- plot cm title "test.svg"
 
     let titledensity = printf "shape = %f, rate = %f" shape rate
-    plotDensity gd vs titledensity "test-density.svg"
+    _ <- plotDensity gd vs titledensity "test-density.svg"
 
     putStrLn $ "Done "++ (show $ V.length vs)
 

@@ -4,9 +4,11 @@ module Plot (
 ) where
 
 import Graphics.Rendering.Chart
-import Data.Accessor
+import Graphics.Rendering.Chart.Backend.Cairo
+import Control.Lens
 import Data.Colour
 import Data.Colour.Names
+import Data.Default.Class
 
 import Plot.Utils
 import Statistics.Types
@@ -16,9 +18,13 @@ import qualified Data.Vector.Unboxed as V
 width, height :: Int
 width = 800
 height = 400
+file_opts :: FileOptions
+file_opts = fo_size .~ (width, height)
+          $ fo_format .~ SVG
+          $ def
 
-plot :: Sample -> String -> FilePath -> IO ()
-plot vs title fn = renderableToSVGFile (toRenderable layout) width height fn
+plot :: Sample -> String -> FilePath -> IO (PickFn ())
+plot vs title fn = renderableToFile file_opts fn (toRenderable layout)
   where
     n = V.length vs
 
@@ -27,15 +33,15 @@ plot vs title fn = renderableToSVGFile (toRenderable layout) width height fn
     ev = zip (map fromIntegral [1 .. n]) (V.toList vs)
     dv = zipWith (\ (x, t) (_, e) -> (x, t - e)) tv ev
 
-    layout :: Layout1 Double Double
-    layout = layout1_title      ^= title
-           $ layout1_background ^= solidFillStyle (opaque white)
-           $ layout1_plots      ^= [ Left  (toPlot theoretical),
-                                     Left  (toPlot empirical),
-                                     Right (toPlot difference)]
-           $ layout1_right_axis ^= yaxis
-           $ setLayout1Foreground (opaque black)
-           $ defaultLayout1
+    layout :: LayoutLR Double Double Double 
+    layout = layoutlr_title      .~ title
+           $ layoutlr_background .~ solidFillStyle (opaque white)
+           $ layoutlr_plots      .~ [ Left (toPlot theoretical),
+                                      Left (toPlot empirical),
+                                      Right (toPlot difference)]
+           $ layoutlr_right_axis .~ yaxis
+           $ layoutlr_foreground .~ opaque black
+           $ def
 
     theoretical :: PlotLines Double Double
     theoretical = theoreticalWith tv
@@ -44,25 +50,25 @@ plot vs title fn = renderableToSVGFile (toRenderable layout) width height fn
     empirical = empiricalWith ev
 
     difference :: PlotLines Double Double
-    difference = differenceWith $
-                 zipWith (\ (x, t) (_, e) -> (x, t - e)) tv ev
+    difference = differenceWith dv
 
 yaxis :: LayoutAxis Double
-yaxis  = laxis_title    ^= "theoretical - empirical"
-       $ laxis_override ^= (axisGridHide . rStyleTicks)
-       $ defaultLayoutAxis
+yaxis  = laxis_title    .~ "theoretical - empirical"
+       $ laxis_override .~ (axisGridHide . rStyleTicks)
+       $ def
 
 rStyleTicks     :: AxisData x -> AxisData x
-rStyleTicks ad  = ad{ axis_ticks_ = map invert_tick (axis_ticks_ ad) }
+rStyleTicks ad  = ad{ _axis_ticks = map invert_tick (_axis_ticks ad) }
     where
         invert_tick :: (x,Double) -> (x, Double)
         invert_tick (x, t) = (x, -t)
 
 
 
-plotDensity :: (ContDistr d) => d -> Sample -> String -> FilePath -> IO ()
-plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) width height fn
+plotDensity :: (ContDistr d) => d -> Sample -> String -> FilePath -> IO (PickFn ())
+plotDensity gd vs title fn = renderableToFile file_opts fn (toRenderable layout)
   where
+
     n  = V.length vs
     mx = V.maximum vs
 
@@ -74,13 +80,13 @@ plotDensity gd vs title fn = renderableToSVGFile (toRenderable layout) width hei
     xs = map (* (mx / bins)) [0 .. bins]
     -- count how many at each level
     ys =  let counts = count (V.toList vs) xs
-              scale  = fromIntegral n * (mx / bins)
-          in  map ((/ scale) . fromIntegral) counts
+              scale'  = fromIntegral n * (mx / bins)
+          in  map ((/ scale') . fromIntegral) counts
 
-    layout :: Layout1 Double Double
+    layout :: LayoutLR Double Double Double
     layout = stdLayout title
                [ Left (toPlot (  empiricalWith (zip xs ys)))
-               , Left (toPlot (theoreticalWith [(x, density gd x) | x <- xs])) ]
+               , Left (toPlot (theoreticalWith [(x, density gd x) | x <- xs]) )]
 
 (/.) :: (Real a, Real b, Fractional c) => a -> b -> c
 (/.) x y = fromRational $ toRational x / toRational y

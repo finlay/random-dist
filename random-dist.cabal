@@ -51,9 +51,11 @@ Executable test-random-dist
     build-depends:
       base >= 4 && < 6,
       transformers,
+      data-default-class,
       primitive,
       logfloat,
       mwc-random,
+      math-functions,
       cri,
       cri-mwc-random,
       statistics,
@@ -61,10 +63,11 @@ Executable test-random-dist
       vector-algorithms,
       repa,
       repa-algorithms,
-      data-accessor,
+      lens,
       colour,
       cairo,
       Chart,
+      Chart-cairo,
       test-framework
   ghc-options:      -Wall
   if !flag(test)

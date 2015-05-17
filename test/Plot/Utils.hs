@@ -2,25 +2,26 @@ module Plot.Utils where
 
 import Data.Colour
 import Data.Colour.Names
-import Data.Accessor
+import Control.Lens
+import Data.Default.Class
 import Graphics.Rendering.Chart
 
 
-line_e, line_t, line_d :: CairoLineStyle
-line_e = line_color ^= withOpacity red   0.8 $ line
-line_t = line_color ^= withOpacity blue  0.8 $ line
-line_d = line_color ^= withOpacity green 0.8 $ line
+line_e, line_t, line_d :: LineStyle
+line_e = line_color .~ withOpacity red   0.8 $ line
+line_t = line_color .~ withOpacity blue  0.8 $ line
+line_d = line_color .~ withOpacity green 0.8 $ line
 
-line :: CairoLineStyle
-line   = line_width       ^= 1.8
-       $ defaultPlotLines ^. plot_lines_style
+line :: LineStyle
+line   = line_width       .~ 1.8
+       $ def 
 
-lineWith :: CairoLineStyle -> String -> [(Double, a)] ->
+lineWith :: LineStyle -> String -> [(Double, a)] ->
             PlotLines Double a
-lineWith ls txt vs = plot_lines_style ^= ls
-       $ plot_lines_values   ^= [vs]
-       $ plot_lines_title    ^= txt
-       $ defaultPlotLines
+lineWith ls txt vs = plot_lines_style .~ ls
+       $ plot_lines_values   .~ [vs]
+       $ plot_lines_title    .~ txt
+       $ def
 
 theoreticalWith :: [(Double, Double)] -> PlotLines Double Double
 theoreticalWith = lineWith line_t "Theoretical"
@@ -32,10 +33,10 @@ differenceWith :: [(Double, Double)] -> PlotLines Double Double
 differenceWith = lineWith line_d "Difference"
 
 stdLayout :: (PlotValue x, PlotValue y) =>
-             String -> [Either (Plot x y) (Plot x y)] -> Layout1 x y
+             String -> [Either (Plot x y) (Plot x y)] -> LayoutLR x y y
 stdLayout title plots =
-      layout1_title      ^= title
-    $ layout1_background ^= solidFillStyle (opaque white)
-    $ layout1_plots      ^= plots
-    $ setLayout1Foreground (opaque black)
-    $ defaultLayout1
+      layoutlr_title      .~ title
+    $ layoutlr_background .~ solidFillStyle (opaque white)
+    $ layoutlr_plots      .~ plots
+    $ layoutlr_foreground .~ opaque black
+    $ def
